@@ -14,6 +14,7 @@ class TCPSocketServidor:
 
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso
+        self.socket_servidor = None
 
     # TODO: A eliminar (código auxiliar)
     def simula_cliente(self):
