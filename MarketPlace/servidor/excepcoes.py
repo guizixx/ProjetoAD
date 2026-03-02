@@ -50,3 +50,34 @@ class ExcepcaoSupermercadoCategoriaJaExistente(ExcepcaoSupermercado):
     def __init__(self, nome_categoria):
         super().__init__(f"A categoria {nome_categoria} já existe. ")
 
+class ExcepcaoSupermercadoCategoriaInexistente(ExcepcaoSupermercado):
+
+    def __init__(self, nome_categoria):
+        super().__init__(f"A categoria {nome_categoria} não existe. ")
+
+class ExcepcaoSupermercadoCategoriaComStock(ExcepcaoSupermercado):
+
+    def __init__(self, nome_categoria):
+        super().__init__(f"A categoria {nome_categoria} contém produtos com quantidade disponível superior a zero. ")
+
+# --- Produtos ---
+
+class ExcepcaoSupermercadoProdutoJaExistente(ExcepcaoSupermercado):
+
+    def __init__(self, nome_produto):
+        super().__init__(f"O produto {nome_produto} já existe. ")
+
+class ExcepcaoSupermercadoProdutoInexistente(ExcepcaoSupermercado):
+
+    def __init__(self, nome_produto):
+        super().__init__(f"O produto {nome_produto} não existe. ")
+
+class ExcepcaoSupermercadoPrecoInvalido(ExcepcaoSupermercado):
+
+    def __init__(self):
+        super().__init__(f"O preço deve ser um valor numérico positivo. ")
+
+class ExcepcaoSupermercadoQuantidadeInvalida(ExcepcaoSupermercado):
+
+    def __init__(self):
+        super().__init__(f"A quantidade deve ser um número inteiro maior ou igual a zero. ")
