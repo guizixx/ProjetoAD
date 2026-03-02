@@ -20,10 +20,34 @@ def main():
 
     # TODO: chama funcoes no cliente para contactar o servidor e enviar mensagens
     cliente = TCPSocketCliente(ponto_acesso)
-    print("CLIENTE> Falta implementar:")
-    print("CLIENTE>  - Tratamento de exceções de ligação")
-    print("CLIENTE>  - Envio de comandos ao servidor")
-    print("CLIENTE>  - Receção e processamento de respostas")
+    
+    try:
+        cliente.ligar()
+    except OSError as e:
+        print(f"CLIENTE> Erro ao ligar ao servidor: {e}")
+        sys.exit(1)
+
+    try:
+        while True:
+            try:
+                comando = input("CLIENTE> ")
+            except EOFError:
+                break
+
+            if not comando.strip():
+                continue
+
+            cliente.enviar_comando(comando)
+            resposta = cliente.receber_resposta()
+            print(f"SERVIDOR> {resposta}")
+
+            if comando.strip().upper() == "EXIT":
+                break
+
+    except OSError as e:
+        print(f"CLIENTE> Erro na comunicação: {e}")
+    finally:
+        cliente.desligar()
 
 
 if __name__ == "__main__":

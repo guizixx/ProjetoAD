@@ -20,26 +20,8 @@ def main():
         sys.exit(1)
 
     servidor = TCPSocketServidor(ponto_acesso)
-    #TODO: chamar funcoes de rede do servidor ...
-    #TODO: apagar e substituir código abaixo por código de sockets
-
-    print("SERVIDOR> A aguardar implementação de:")
-    print("SERVIDOR>  - Criação do socket")
-    print("SERVIDOR>  - Bind ao endereço")
-    print("SERVIDOR>  - Colocação em modo listen")
-    print("SERVIDOR>  - Aceitação de ligação de cliente")
-    print("SERVIDOR>  - Tratamento de exceções")
-    print("SERVIDOR>  - A função processar_comando() deve ser desenvolvida.")
-    print("SERVIDOR> NÃO remover a chamada a processar_comando() — é obrigatória para a correção automática.")
-    print("SERVIDOR> NÃO alterar path para processar_comando() — é obrigatório para a correção automática.")
     
-    while True: 
-        print("SERVIDOR> Servidor pronto para receber comandos simulado. ")
-        comando = servidor.simula_cliente()
-        resposta = processador.processar_comando(comando)
-        print(resposta)
-        if comando == 'EXIT': 
-            break
+    servidor.iniciar(processador)
 
 if __name__ == "__main__":
     main()
