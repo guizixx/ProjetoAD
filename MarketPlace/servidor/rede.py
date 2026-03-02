@@ -16,8 +16,46 @@ class TCPSocketServidor:
         self.ponto_acesso = ponto_acesso
         self.socket_servidor = None
 
-    # TODO: A eliminar (código auxiliar)
-    def simula_cliente(self):
-        return input("SERVIDOR> Escreva mensagem>")
+    def iniciar(self, processador):
+        self.socket_servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_servidor.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket_servidor.bind((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
+        self.socket_servidor.listen(1)
+        print(f"SERVIDOR> A escutar em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
-    # TODO: A completar
+        while True:
+            try:
+                (conn_sock, (addr, port)) = self.socket_servidor.accept()
+                print("SERVIDOR> Servidor ligado a %s no porto %s" % (addr, port))
+                self.tratar_cliente(conn_sock, processador)
+            except KeyboardInterrupt:
+                print("SERVIDOR> Servidor terminado pelo utilizador.")
+                break
+            except OSError as e:
+                print(f"SERVIDOR> Erro ao aceitar ligação: {e}")
+                break
+
+        self.socket_servidor.close()
+
+    def tratar_cliente(self, conn_sock, processador):
+        try:
+            while True:
+                dados = conn_sock.recv(4096)
+                if not dados:
+                    print(f"SERVIDOR> Cliente desligou-se.")
+                    break
+
+                comando = dados.decode('utf-8').strip()
+                print(f"SERVIDOR> Comando recebido: {comando}")
+
+                resposta = processador.processar_comando(comando)
+                print(f"SERVIDOR> Resposta: {resposta}")
+                conn_sock.sendall((resposta + "\n").encode('utf-8'))
+
+                if comando.upper() == "EXIT":
+                    break
+        except OSError as e:
+            print(f"SERVIDOR> Erro na comunicação com o cliente: {e}")
+        finally:
+            conn_sock.close()
+            print(f"SERVIDOR> Ligação com o cliente encerrada.")

@@ -12,5 +12,27 @@ class TCPSocketCliente:
 
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso
+        self.socket_cliente = None
 
-    # TODO: A completar
+    def ligar(self):
+        self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_cliente.connect((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
+        print(f"CLIENTE> Ligado ao servidor em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
+
+    def enviar_comando(self, comando):
+        self.socket_cliente.sendall((comando + "\n").encode('utf-8'))
+
+    def receber_resposta(self):
+        resposta = b""
+        while True:
+            parte = self.socket_cliente.recv(4096)
+            resposta += parte
+            if resposta.endswith(b"\n"):
+                break
+        return resposta.decode('utf-8').strip()
+    
+    def desligar(self):
+        if self.socket_cliente is not None:
+            self.socket_cliente.close()
+            self.socket_cliente = None
+            print("CLIENTE> Ligação encerrada.")
