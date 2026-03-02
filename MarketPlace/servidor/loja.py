@@ -7,6 +7,7 @@ class Loja:
 
     def __init__(self):
         self._categorias = {}
+        self._produtos = {}
 
     def reset(): 
         Categoria._contador_global = 1
@@ -29,4 +30,6 @@ class Loja:
                 return c.id
         return None
     
+    def criar_produto(self, nome, categoria, preco, quantidade):
+        pass    
     
