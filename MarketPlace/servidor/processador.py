@@ -6,6 +6,7 @@ from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
 from servidor.excepcoes import ExcepcaoComandoVazio
 import shlex
 from servidor.loja import Loja
+from shared.utilities import normalizar_nome
 
 class Processador:
 
@@ -34,8 +35,8 @@ class Processador:
             "REMOVE_CATEGORIA": self._cmd_remove_categoria,
             "CRIA_PRODUTO": self._cmd_cria_produto,
             "LISTA_PRODUTOS": self._cmd_lista_produtos,
-            "AUMENTA_STOCK_PRODUTO": self._cmd_aumenta_stock,
-            "ATUALIZA_PRECO_PRODUTO": self._atualiza_preco,
+            "AUMENTA_STOCK_PRODUTO": self._cmd_aumenta_stock_produto,
+            "ATUALIZA_PRECO_PRODUTO": self._cmd_atualiza_preco_produto,
             "CRIA_CLIENTE": self._cmd_cria_cliente,
             "LISTA_CLIENTES": self._cmd_lista_clientes,
             "ADICIONA_PRODUTO_CARRINHO": self._cmd_adiciona_produto_carrinho,
@@ -84,25 +85,14 @@ class Processador:
         categoria = self.loja.criar_categoria(nome_categoria)
         return f"Categoria {categoria.nome} criada com sucesso."
     
-    def _cmd_lista_categorias(self):
-        prints = "OK; \n"
-        categorias = self.loja._categorias
-        if categorias.__len__() == 0:
-            return "OK; Sem Categorias."
-        for c in categorias.values():
-            prints + f"{c.id} - {c.nome} - {c.nr_produtos_categoria};\n"
-        return prints
+    def _cmd_lista_categorias(self):        
+        return self.loja.lista_categorias()
 
-    def _cmd_remove_categorias(self, args):
+    def _cmd_remove_categoria(self, args):
         self._validar_n_args(args, 1)
-        categoria = self.loja.obter_id_categoria(args[0])
-        if categoria is None:
-            raise ExcepcaoComandoInvalido("Categoria Inexistente")
-        for p in self.loja._produtos.values():
-            if (p._categoria == categoria & p._quantidade > 0):
-                raise ExcepcaoComandoInvalido("Existem produtos com essa categoria associada")
-        
-        return f"Categoria {self.loja._categorias.get(categoria)} removida com sucesso."
+        nome_categoria = args[0]
+        nome_categoria_removida = self.loja.remover_categoria(nome_categoria)
+        return f"Categoria {nome_categoria_removida} removida com sucesso."
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
@@ -111,22 +101,65 @@ class Processador:
         preco = round(args[2], 2)
         quantidade = args[3]
 
-        for p in self.loja._produtos.values():
-            if nome_produto == p.nome():
-                raise ExcepcaoComandoInvalido("Nome do produto já existe.")
-
-        if self.loja.obter_id_categoria(nome_categoria) is None:
-            raise ExcepcaoComandoInvalido("Categoria não existe.")
-
-        if preco <= 0:
-            raise ExcepcaoComandoInvalido("Preço inválido.")
-
-        if quantidade < 0:
-            raise ExcepcaoComandoInvalido("Quantidade inválida.")
-
-
+        produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return f"Produto {nome_produto} criado com sucesso."
     
+    def _cmd_lista_produtos(self):
+        return self.loja.listar_produtos()
+
+    def _cmd_aumenta_stock_produto(self, args):
+        self._validar_n_args(args, 2)
+        nome_produto = args[0]
+        quantidade_delta = args[1]
+        if self.loja.obter_id_produto(nome_produto) is None:
+            raise ExcepcaoComandoInvalido("O nome do produto não existe.")
+        if quantidade_delta < 0:
+            raise ExcepcaoComandoInvalido("A quantidade a aumentar tem de ser um número inteiro positivo")
+        self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
+        return f"Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
+
+    def _cmd_atualiza_preco_produto(self, args):
+        self._validar_n_args(args, 2)
+        nome_produto = args[0]
+        novo_preco = args[1]
+        if self.loja.obter_id_produto(nome_produto) is None:
+            raise ExcepcaoComandoInvalido("O nome do produto não existe.")
+        if novo_preco < 0:
+            raise ExcepcaoComandoInvalido("O preço tem de ser um número inteiro positivo")
+        
+        self.loja.atualizar_preco_produto(nome_produto, novo_preco)
+        return f"Preco de {nome_produto} alterado para {novo_preco} com sucesso."
+
+    def _cmd_cria_cliente(self, args):
+        self._validar_n_args(args, 3)
+        nome = normalizar_nome(args[0])
+        email = args[1]
+        pw = args[2]
+
+        cliente = self.loja.criar_cliente(nome, email, pw)
+        return f"Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
+
+    def _cmd_lista_clientes(self):
+        return self.loja.listar_clientes()
+
+    def _cmd_adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
+        
+
+        
+        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho."
+
+
+
+    def _cmd_remove_produto_carrinho(self):
+        pass
+
+    def _cmd_lista_carrinho(self):
+        pass
+
+    def _cmd_checkout_carrinho(self):
+        pass
+        
+
     def _cmd_sai_aplicacao(self, args):
         self._validar_n_args(args, 0)
         return "Saindo da aplicação do lado do servidor."
