@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: Ponto de entrada do cliente - lê comandos do utilizador e comunica com o servidor
+
 from sys import argv
 import sys
 from  shared.socket_utilities import PontoAcesso
@@ -20,7 +25,7 @@ def main():
 
     # TODO: chama funcoes no cliente para contactar o servidor e enviar mensagens
     cliente = TCPSocketCliente(ponto_acesso)
-    
+
     try:
         cliente.ligar()
     except OSError as e:

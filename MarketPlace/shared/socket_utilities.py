@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: 
+
 import ipaddress
 
 from shared.excepcoes import ExcepcaoIPInvalido

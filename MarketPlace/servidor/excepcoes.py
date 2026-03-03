@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: Exceções do servidor - regras de negócio e comandos
+
 # -----------------------------------
 #   Excepções de Comando inválido
 # -----------------------------------

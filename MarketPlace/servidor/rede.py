@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: Camada de transporte TCP do servidor - aceita ligações e move strings
+
 import socket
 from shared.socket_utilities import PontoAcesso
 from servidor.processador import Processador
@@ -22,7 +27,7 @@ class TCPSocketServidor:
         self.socket_servidor.bind((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
         self.socket_servidor.listen(1)
         print(f"SERVIDOR> A escutar em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
-
+        
         while True:
             try:
                 (conn_sock, (addr, port)) = self.socket_servidor.accept()
@@ -54,6 +59,8 @@ class TCPSocketServidor:
 
                 if comando.upper() == "EXIT":
                     break
+        except KeyboardInterrupt:
+            raise
         except OSError as e:
             print(f"SERVIDOR> Erro na comunicação com o cliente: {e}")
         finally:

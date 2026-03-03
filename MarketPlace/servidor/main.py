@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: Ponto de entrada do servidor - inicializa socket TCP e aguarda clientes
+
 import sys
 from servidor.processador import Processador
 from servidor.rede import TCPSocketServidor
