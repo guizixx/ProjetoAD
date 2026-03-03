@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: 
+
 from shared.utilities import normalizar_nome
 from servidor.excepcoes import ExcepcaoSupermercadoCategoriaJaExistente
 from servidor.categoria import Categoria

@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 
+# Descrição: Camada de transporte TCP do servidor - aceita ligações e move strings
+
 import socket
 from shared.socket_utilities import PontoAcesso
 from servidor.processador import Processador
