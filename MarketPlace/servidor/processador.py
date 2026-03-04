@@ -112,7 +112,7 @@ class Processador:
         self._validar_n_args(args, 4)
         nome_produto = normalizar_nome(args[0])
         nome_categoria = normalizar_nome(args[1])
-        preco = round(args[2], 2)
+        preco = round(int(args[2]), 2)
         quantidade = args[3]
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    

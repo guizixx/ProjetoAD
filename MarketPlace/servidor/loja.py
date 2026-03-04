@@ -9,7 +9,7 @@ from servidor.categoria import Categoria
 from servidor.produto import Produto
 from servidor.clienteLoja import ClienteLoja
 from servidor.encomenda import Encomenda
-from datetime import _Date
+from datetime import datetime
 
 class Loja:
 
@@ -204,7 +204,7 @@ class Loja:
             prod = self._produtos.get(k)
             total += (prod.obter_preco() * prod.obter_quantidade())
 
-        encomenda = Encomenda(_Date.today(), self._clientes.get(id_cliente).obter_carrinho_compras(), id_cliente, total)
+        encomenda = Encomenda(datetime.now(), self._clientes.get(id_cliente).obter_carrinho_compras(), id_cliente, total)
 
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
 
