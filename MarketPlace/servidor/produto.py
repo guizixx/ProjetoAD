@@ -33,4 +33,4 @@ class Produto:
         self.quantidade += adicionado
 
     def alterar_preco(self, novo):
-        self.preco = novo
+        self.preco = round(novo, 2)
