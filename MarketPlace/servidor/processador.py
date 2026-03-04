@@ -99,7 +99,8 @@ class Processador:
         categoria = self.loja.criar_categoria(nome_categoria)
         return f"Categoria {categoria.nome} criada com sucesso."
     
-    def _cmd_lista_categorias(self):        
+    def _cmd_lista_categorias(self, args):        
+        self._validar_n_args(args, 0)
         return self.loja.lista_categorias()
 
     def _cmd_remove_categoria(self, args):
@@ -118,7 +119,8 @@ class Processador:
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return f"OK; Produto {produto.nome} criado com sucesso."
     
-    def _cmd_lista_produtos(self):
+    def _cmd_lista_produtos(self, args):
+        self._validar_n_args(args, 0)
         return self.loja.listar_produtos()
 
     def _cmd_aumenta_stock_produto(self, args):
@@ -135,7 +137,7 @@ class Processador:
         novo_preco = args[1]
         
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return f"OK; Preco de {nome_produto} alterado para {novo_preco} com sucesso."
+        return f"OK; Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
 
     def _cmd_cria_cliente(self, args):
         self._validar_n_args(args, 3)
@@ -146,7 +148,8 @@ class Processador:
         cliente = self.loja.criar_cliente(nome, email, pw)
         return f"OK; Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
 
-    def _cmd_lista_clientes(self):
+    def _cmd_lista_clientes(self, args):
+        self._validar_n_args(args, 0)
         return self.loja.listar_clientes()
 
     def _cmd_adiciona_produto_carrinho(self, args):

@@ -80,7 +80,7 @@ class Loja:
             raise ExcepcaoComandoInvalido("NOK; Categoria não existe.")
         if preco <= 0:
             raise ExcepcaoComandoInvalido("NOK; Preço inválido.")
-        if quantidade < 0:
+        if int(quantidade) < 0:
             raise ExcepcaoComandoInvalido("NOK; Quantidade inválida.")
         
         produto = Produto(nome_produto, nome_categoria, preco, quantidade)
@@ -107,7 +107,7 @@ class Loja:
     def aumentar_stock_produto(self, nome, quantidade):
         if self.obter_id_produto(nome) is None:
             raise ExcepcaoComandoInvalido("NOK; O nome do produto não existe.")
-        if quantidade < 0:
+        if int(quantidade) < 0:
             raise ExcepcaoComandoInvalido("NOK; A quantidade a aumentar tem de ser um número inteiro positivo")
 
         self._produtos.get(self.obter_id_produto(nome)).adicionar_quantidade(quantidade)
@@ -115,7 +115,7 @@ class Loja:
     def atualizar_preco_produto(self, nome, novo_preco):
         if self.obter_id_produto(nome) is None:
             raise ExcepcaoComandoInvalido("NOK; O nome do produto não existe.")
-        if novo_preco < 0:
+        if float(novo_preco) < 0:
             raise ExcepcaoComandoInvalido("NOK; O preço tem de ser um número inteiro positivo")
         
         self._produtos.get(self.obter_id_produto(nome)).alterar_preco(novo_preco)
