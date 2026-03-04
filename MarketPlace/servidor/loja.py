@@ -21,11 +21,15 @@ class Loja:
 
         # todos os dicionários atributo são do tipo { id : objeto }
 
-    def reset(): 
+    def reset(self): 
         Categoria._contador_global = 1
         Produto._contador_global = 1
         Encomenda._contador_global = 1
         ClienteLoja._contador_global = 1
+        self._categorias = {}
+        self._produtos = {}
+        self._clientes = {}
+        self._encomendas = {}
         # TODO: MUITO IMPORTANTE Completar esta funcao para Testes Unitários puderem executar sem problemas
 
     # -----------------------------
@@ -41,11 +45,16 @@ class Loja:
     
     def lista_categorias(self):
         if len(self._categorias.values()) == 0:
-            return "OK; Sem Categorias."
-        prints = f"OK;\nTotal Categorias: {len(self._categorias.values())}\nTotal Produtos: {self._produtos.values()}\n\n"
+            return "Sem Categorias."
+        linhasDePrint = []
+        linhasDePrint.append(f"\nTotal Categorias: {len(self._categorias.values())}")
+        linhasDePrint.append(f"TotalProdutos: {len(self._produtos.values())}")
+        # prints = f"OK;\nTotal Categorias: {len(self._categorias.values())}\nTotal Produtos: {self._produtos.values()}\n\n"
         for c in self._categorias.values():
-            prints + f"{c.obter_id()} - {c.obter_nome()}({self.obter_nr_produtos_categoria(c.obter_nome())});\n"
-        return prints
+            num_prod_categ = self.obter_nr_produtos_categoria(c.obter_nome())
+            linhasDePrint.append(f"{c.obter_id()} - {c.obter_nome()} ({num_prod_categ} produtos)")
+            # prints + f"{c.obter_id()} - {c.obter_nome()}({self.obter_nr_produtos_categoria(c.obter_nome())});\n"
+        return "\n".join(linhasDePrint)
     
     def obter_id_categoria(self, nome): 
         for c in self._categorias.values(): 
@@ -172,14 +181,25 @@ class Loja:
         self._produtos.get(id_produto).adicionar_quantidade(-quantidade)
     
     def remover_produto_carrinho(self, id_cliente, nome_produto):
+        try:
+            id_cliente = int(id_cliente)
+        except ValueError:
+            raise ExcepcaoComandoInvalido("NOK; Id de cliente inválido.")
+
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("NOK; Id inválido.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("NOK; Produto inexistente na loja.")
-        if nome_produto not in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
+
+        id_produto = self.obter_id_produto(nome_produto)
+        carrinho = self._clientes.get(id_cliente).obter_carrinho_compras()
+
+        if id_produto not in carrinho.keys():
             raise ExcepcaoComandoInvalido("NOK; O cliente não possui esse produto.")
-        quantidade = self._clientes.get(id_cliente).obter_carrinho_compras()
-        self._clientes.get(id_cliente).obter_carrinho_compras().pop(self.obter_id_produto(nome_produto))
+
+        quantidade = carrinho[id_produto]
+        carrinho.pop(id_produto)
+        self._produtos.get(id_produto).adicionar_quantidade(quantidade)
 
 
     def lista_carrinho_cliente(self, id_cliente):
