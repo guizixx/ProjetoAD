@@ -1,6 +1,6 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
+# Tiago Telha - nº 60261
 # Descrição: 
 
 from shared.utilities import normalizar_nome
@@ -89,7 +89,7 @@ class Loja:
             raise ExcepcaoComandoInvalido("Categoria não existe.")
         if preco <= 0:
             raise ExcepcaoComandoInvalido("Preço inválido.")
-        if int(quantidade) < 0:
+        if quantidade < 0:
             raise ExcepcaoComandoInvalido("Quantidade inválida.")
         
         produto = Produto(nome_produto, nome_categoria, preco, quantidade)
@@ -124,8 +124,8 @@ class Loja:
     def atualizar_preco_produto(self, nome, novo_preco):
         if self.obter_id_produto(nome) is None:
             raise ExcepcaoComandoInvalido("O nome do produto não existe.")
-        if float(novo_preco) < 0:
-            raise ExcepcaoComandoInvalido("O preço tem de ser um número inteiro positivo")
+        if novo_preco < 0:
+            raise ExcepcaoComandoInvalido("O preço tem de ser um número positivo.")
         
         self._produtos.get(self.obter_id_produto(nome)).alterar_preco(novo_preco)
 
@@ -155,15 +155,6 @@ class Loja:
     # Carrinho
     #--------------
     def adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
-        try:
-            id_cliente = int(id_cliente)
-        except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
-        try:
-            quantidade = int(quantidade)
-        except ValueError:
-            raise ExcepcaoComandoInvalido("Quantidade inválida.")
-
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("Cliente não identificado.")
         if self.obter_id_produto(nome_produto) is None:

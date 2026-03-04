@@ -1,6 +1,6 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
+# Tiago Telha - nº 60261
 # Descrição: Classe de domínio Produto - representa um produto no supermercado, com id, nome, categoria, preço e quantidade. O id é gerado automaticamente.
 
 class Produto:

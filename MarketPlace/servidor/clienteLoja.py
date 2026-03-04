@@ -1,3 +1,8 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260 
+# Tiago Telha - nº 60261
+# Descrição: Classe de domínio ClienteLoja - representa um cliente da loja
+
 class ClienteLoja:
     _contador_global = 1
 

@@ -113,8 +113,14 @@ class Processador:
         self._validar_n_args(args, 4)
         nome_produto = normalizar_nome(args[0])
         nome_categoria = normalizar_nome(args[1])
-        preco = round(int(args[2]), 2)
-        quantidade = int(args[3])
+        try:
+            preco = round(float(args[2]), 2)
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+        try:
+            quantidade = int(args[3])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Quantidade inválida.")
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return f"Produto {produto.nome} criado com sucesso."
@@ -126,7 +132,10 @@ class Processador:
     def _cmd_aumenta_stock_produto(self, args):
         self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
-        quantidade_delta = args[1]
+        try:
+            quantidade_delta = int(args[1])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Quantidade inválida.")
 
         self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
         return f"Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
@@ -134,8 +143,10 @@ class Processador:
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
-        novo_preco = args[1]
-        
+        try:
+            novo_preco = float(args[1])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Preço inválida.")
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
         return f"Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
 
@@ -154,16 +165,25 @@ class Processador:
 
     def _cmd_adiciona_produto_carrinho(self, args):
         self._validar_n_args(args, 3)
-        id_cliente = args[0]
+        try:
+            id_cliente = int(args[0])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+        try:
+            quantidade = int(args[2])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Quantidade inválida.")
         nome_produto = normalizar_nome(args[1])
-        quantidade = args[2]
 
         self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
         return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
 
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
-        id_cliente = args[0]
+        try:
+            id_cliente = int(args[0])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
         nome_produto = normalizar_nome(args[1])
 
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
@@ -171,20 +191,29 @@ class Processador:
 
     def _cmd_lista_carrinho(self, args):
         self._validar_n_args(args, 1)
-        id_cliente = args[0]
+        try:
+            id_cliente = int(args[0])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
         return self.loja.lista_carrinho_cliente(self, id_cliente)
 
     def _cmd_checkout_carrinho(self, args):
         self._validar_n_args(args, 1)
-        id_cliente = args[0]
+        try:
+            id_cliente = int(args[0])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
         self.loja.checkout_carrinho(id_cliente)
         return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
 
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
-        id_cliente = args[0]
+        try:
+            id_cliente = int(args[0])
+        except ValueError:
+            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
         return self.loja.listar_encomendas(id_cliente)
 

@@ -1,6 +1,6 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
+# Tiago Telha - nº 60261
 # Descrição: Camada de transporte TCP do servidor - aceita ligações e move strings
 
 import socket
