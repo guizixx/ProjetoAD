@@ -10,3 +10,16 @@ class Encomenda:
 
     def obter_id(self):
         return self.id
+    
+    def obter_data(self):
+        return self.data
+    
+    def obter_carrinho_compras(self):
+        return self.carrinho_compras
+    
+    def obter_cliente_id(self):
+        return self.cliente_id
+    
+    def obter_total(self):
+        return self.total
+

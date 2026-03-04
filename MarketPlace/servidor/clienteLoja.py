@@ -12,6 +12,18 @@ class ClienteLoja:
 
     def obter_id(self):
         return self.id
+    
+    def obter_nome(self):
+        return self.nome
+    
+    def obter_email(self):
+        return self.email
+    
+    def obter_carrinho_compras(self):
+        return self.carrinho_compras
+    
+    def obter_permissao(self):
+        return self.permissao
 
 
 

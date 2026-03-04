@@ -13,3 +13,6 @@ class Categoria:
 
     def obter_id(self): 
         return self.id
+    
+    def obter_nome(self):
+        return self.nome

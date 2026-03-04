@@ -52,7 +52,6 @@ class Processador:
             "EXIT": self._cmd_sai_aplicacao
         }
 
-
     def _dividir_comando(self, comando): 
         try:
             partes = shlex.split(comando)
@@ -70,7 +69,6 @@ class Processador:
         else: 
             raise ExcepcaoComandoVazio()
     
-
     def _validar_n_args(self, args, n):
         if len(args) != n:
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
@@ -81,9 +79,20 @@ class Processador:
         except KeyError:
             raise ExcepcaoComandoDesconhecido(nome)
         return comando
+    
+    def processar_comando(self, comando):
+        try:
+            nome_comando, args = self._dividir_comando(comando)
+            handler = self._obter_handler(nome_comando)
+        
+            resultado = handler(args)
+            return f"OK; {resultado}"
+        except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
+            return f"NOK; {e}"
 
+    #------------------------
     # _cmd_ handlers
-
+    #------------------------
     def _cmd_cria_categoria(self, args):
         self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])
@@ -97,7 +106,7 @@ class Processador:
         self._validar_n_args(args, 1)
         nome_categoria = args[0]
         nome_categoria_removida = self.loja.remover_categoria(nome_categoria)
-        return f"Categoria {nome_categoria_removida} removida com sucesso."
+        return f"OK; Categoria {nome_categoria_removida} removida com sucesso."
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
@@ -107,7 +116,7 @@ class Processador:
         quantidade = args[3]
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
-        return f"Produto {nome_produto} criado com sucesso."
+        return f"OK; Produto {produto.nome} criado com sucesso."
     
     def _cmd_lista_produtos(self):
         return self.loja.listar_produtos()
@@ -116,24 +125,17 @@ class Processador:
         self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         quantidade_delta = args[1]
-        if self.loja.obter_id_produto(nome_produto) is None:
-            raise ExcepcaoComandoInvalido("O nome do produto não existe.")
-        if quantidade_delta < 0:
-            raise ExcepcaoComandoInvalido("A quantidade a aumentar tem de ser um número inteiro positivo")
+
         self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
-        return f"Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
+        return f"OK; Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
 
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         novo_preco = args[1]
-        if self.loja.obter_id_produto(nome_produto) is None:
-            raise ExcepcaoComandoInvalido("O nome do produto não existe.")
-        if novo_preco < 0:
-            raise ExcepcaoComandoInvalido("O preço tem de ser um número inteiro positivo")
         
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return f"Preco de {nome_produto} alterado para {novo_preco} com sucesso."
+        return f"OK; Preco de {nome_produto} alterado para {novo_preco} com sucesso."
 
     def _cmd_cria_cliente(self, args):
         self._validar_n_args(args, 3)
@@ -142,7 +144,7 @@ class Processador:
         pw = args[2]
 
         cliente = self.loja.criar_cliente(nome, email, pw)
-        return f"Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
+        return f"OK; Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
 
     def _cmd_lista_clientes(self):
         return self.loja.listar_clientes()
@@ -154,7 +156,7 @@ class Processador:
         quantidade = args[2]
 
         self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
-        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
+        return f"OK; Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
 
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
@@ -162,7 +164,7 @@ class Processador:
         nome_produto = normalizar_nome(args[1])
 
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
-        return f"Produto {nome_produto} removido com sucesso do carrinho de compras."
+        return f"OK; Produto {nome_produto} removido com sucesso do carrinho de compras."
 
     def _cmd_lista_carrinho(self, args):
         self._validar_n_args(args, 1)
@@ -175,7 +177,7 @@ class Processador:
         id_cliente = args[0]
 
         self.loja.checkout_carrinho(id_cliente)
-        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
+        return "OK; Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
 
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
@@ -183,17 +185,7 @@ class Processador:
 
         return self.loja.listar_encomendas(id_cliente)
 
-
     def _cmd_sai_aplicacao(self, args):
         self._validar_n_args(args, 0)
-        return "Saindo da aplicação do lado do servidor."
+        return "OK; Saindo da aplicação do lado do servidor."
     
-    def processar_comando(self, comando):
-        try:
-            nome_comando, args = self._dividir_comando(comando)
-            handler = self._obter_handler(nome_comando)
-        
-            resultado = handler(args)
-            return f"OK; {resultado}"
-        except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
-            return f"NOK; {e}"

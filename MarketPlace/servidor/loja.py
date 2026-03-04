@@ -44,19 +44,19 @@ class Loja:
             return "OK; Sem Categorias."
         prints = f"OK;\nTotal Categorias: {len(self._categorias.values())}\nTotal Produtos: {self._produtos.values()}\n\n"
         for c in self._categorias.values():
-            prints + f"{c.id} - {c.nome}({self.obter_nr_produtos_categoria(c.nome)});\n"
+            prints + f"{c.obter_id()} - {c.obter_nome()}({self.obter_nr_produtos_categoria(c.obter_nome())});\n"
         return prints
     
     def obter_id_categoria(self, nome): 
         for c in self._categorias.values(): 
-            if nome == c.nome: 
-                return c.id
+            if nome == c.obter_nome(): 
+                return c.obter_id()
         return None
     
     def obter_nr_produtos_categoria(self, nome):
         counter = 0
         for p in self._produtos.values():
-            if p.categoria == nome:
+            if p.obter_categoria() == nome:
                 counter += 1
         return counter
     
@@ -74,7 +74,7 @@ class Loja:
     #-----------------------
     def criar_produto(self, nome_produto, nome_categoria, preco, quantidade):
         for p in self._produtos.values():
-            if nome_produto == p.nome():
+            if nome_produto == p.obter_nome():
                 raise ExcepcaoComandoInvalido("NOK; Nome do produto já existe.")
         if self.obter_id_categoria(nome_categoria) is None:
             raise ExcepcaoComandoInvalido("NOK; Categoria não existe.")
@@ -84,7 +84,7 @@ class Loja:
             raise ExcepcaoComandoInvalido("NOK; Quantidade inválida.")
         
         produto = Produto(nome_produto, nome_categoria, preco, quantidade)
-        self._produtos[produto.id] = produto
+        self._produtos[produto.obter_id()] = produto
         return produto 
 
     def listar_produtos(self):
@@ -92,23 +92,33 @@ class Loja:
             return "OK; Sem Produtos."
         quantidade_total = 0
         for p in self._produtos.values():
-            quantidade_total += p.quantidade
+            quantidade_total += p.obter_quantidade()
         prints = f"OK;\nTotal Produtos: {len(self._produtos.values())}\nTotal Quantidade: {quantidade_total}\n\n"
         for p in self._produtos.values():
-            prints + f"{p.id} - {p.nome}({p.categoria}, {p.preco}, {p._quantidade} unidades);\n"
+            prints + f"{p.obter_id()} - {p.obter_nome()}({p.obter_categoria()}, {p.obter_preco()}, {p.obter_quantidade()} unidades);\n"
         return prints
     
     def obter_id_produto(self, nome):
         for p in self._produtos.values():
-            if p.nome == nome:
-                return p.id
+            if p.obter_nome() == nome:
+                return p.obter_id()
         return None
     
     def aumentar_stock_produto(self, nome, quantidade):
-        self._produtos.get(self.obter_id_produto(nome)).quantidade += quantidade
+        if self.obter_id_produto(nome) is None:
+            raise ExcepcaoComandoInvalido("NOK; O nome do produto não existe.")
+        if quantidade < 0:
+            raise ExcepcaoComandoInvalido("NOK; A quantidade a aumentar tem de ser um número inteiro positivo")
+
+        self._produtos.get(self.obter_id_produto(nome)).adicionar_quantidade(quantidade)
 
     def atualizar_preco_produto(self, nome, novo_preco):
-        self._produtos.get(self.obter_id_produto(nome)).preco = novo_preco
+        if self.obter_id_produto(nome) is None:
+            raise ExcepcaoComandoInvalido("NOK; O nome do produto não existe.")
+        if novo_preco < 0:
+            raise ExcepcaoComandoInvalido("NOK; O preço tem de ser um número inteiro positivo")
+        
+        self._produtos.get(self.obter_id_produto(nome)).alterar_preco(novo_preco)
 
     #---------------
     # Clientes
@@ -116,10 +126,10 @@ class Loja:
 
     def criar_cliente(self, nome, email, pw):
         for c in self._clientes.values():
-            if c.email == email.lower():
+            if c.obter_email() == email.lower():
                 raise ExcepcaoComandoInvalido("NOK; Email em uso.")
         cliente = ClienteLoja(nome, email, pw)
-        self._clientes[cliente.id] = cliente
+        self._clientes[cliente.obter_id()] = cliente
         return cliente
 
 
@@ -129,7 +139,7 @@ class Loja:
         
         prints = f"OK;\nTotal Clientes: {len(self._clientes.values())}\n\n"
         for c in self._clientes.values():
-            prints + f"{c.id} - {c.nome}({c.email});\n"
+            prints + f"{c.obter_id()} - {c.obter_nome()}({c.obter_email()});\n"
         return prints
     
     #--------------
@@ -140,17 +150,17 @@ class Loja:
             raise ExcepcaoComandoInvalido("NOK; Cliente não identificado.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("NOK; Produto inexistente na loja.")
-        if quantidade < 0 | self._produtos.get(self.obter_id_produto(nome_produto)).quantidade < quantidade:
+        if quantidade < 0 | self._produtos.get(self.obter_id_produto(nome_produto)).obter_quantidade() < quantidade:
             raise ExcepcaoComandoInvalido("NOK; Quantidade inválida.")
         
         produto_no_carrinho = False
-        for p in self._clientes.get(id_cliente).carrinho_compras.keys():
+        for p in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
             if p == self.obter_id_produto(nome_produto):
                 produto_no_carrinho = True
         if produto_no_carrinho is True:
-            self._clientes.get(id_cliente).carrinho_compras[p] += quantidade
+            self._clientes.get(id_cliente).obter_carrinho_compras()[p] += quantidade
         else:
-            self._clientes.get(id_cliente).carrinho_compras[p] = quantidade
+            self._clientes.get(id_cliente).obter_carrinho_compras()[p] = quantidade
         
         self._produtos[self.obter_id_produto(nome_produto)] -= quantidade
     
@@ -159,15 +169,16 @@ class Loja:
             raise ExcepcaoComandoInvalido("NOK; Id inválido.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("NOK; Produto inexistente na loja.")
-        if nome_produto not in self._clientes.get(id_cliente).carrinho_compras().keys():
+        if nome_produto not in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
             raise ExcepcaoComandoInvalido("NOK; O cliente não possui esse produto.")
-        
-        self._clientes.get(id_cliente).carrinho_compras().pop(self.obter_id_produto(nome_produto))
+        quantidade = self._clientes.get(id_cliente).obter_carrinho_compras()
+        self._clientes.get(id_cliente).obter_carrinho_compras().pop(self.obter_id_produto(nome_produto))
+
 
     def lista_carrinho_cliente(self, id_cliente):
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("NOK; Id inválido.")
-        carrinho = self._clientes.get(id_cliente).carrinho_compras()
+        carrinho = self._clientes.get(id_cliente).obter_carrinho_compras()
         if len(carrinho) < 1:
             return "OK; Carrinho Vazio."
         
@@ -176,26 +187,26 @@ class Loja:
         prints = ""
         for k in carrinho.keys():
             prod = self._produtos.get(k)
-            quantidade_counter += prod.quantidade
-            preco_counter += (prod.preco * prod.quantidade)
-            prints + f"{k} - {prod.nome}({self.obter_id_categoria(prod.categoria)}-{prod.categoria}, {prod.preco} euros, {prod.quantidade} unidades);\n"
+            quantidade_counter += prod.obter_quantidade()
+            preco_counter += (prod.obter_preco() * prod.obter_quantidade())
+            prints + f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco()} euros, {prod.obter_quantidade()} unidades);\n"
 
         return f"OK;\nTotal Produtos: {len(carrinho)}\nTotal Quantidade: {quantidade_counter}\nTotal Preço: {preco_counter} euros\n\n" + prints
 
     def checkout_carrinho(self, id_cliente):
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("NOK; Id inválido.")
-        if len(self._clientes.get(id_cliente).carrinho_compras()) < 1:
+        if len(self._clientes.get(id_cliente).obter_carrinho_compras()) < 1:
             raise ExcepcaoComandoInvalido("NOK; Cliente sem produtos no carrinho.")
 
         total = 0
-        for k in self._clientes.get(id_cliente).carrinho_compras().keys():
+        for k in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
             prod = self._produtos.get(k)
-            total += (prod.preco * prod.quantidade)
+            total += (prod.obter_preco() * prod.obter_quantidade())
 
-        encomenda = Encomenda(_Date.today(), self._clientes.get(id_cliente).carrinho_compras(), id_cliente, total)
+        encomenda = Encomenda(_Date.today(), self._clientes.get(id_cliente).obter_carrinho_compras(), id_cliente, total)
 
-        self._clientes.get(id_cliente).carrinho_compras().clear()
+        self._clientes.get(id_cliente).obter_carrinho_compras().clear()
 
 
     #-----------------
@@ -210,7 +221,7 @@ class Loja:
         encomendas_cliente = []
 
         for e in self._encomendas.values():
-            if e.cliente_id == id_cliente:
+            if e.obter_cliente_id() == id_cliente:
                 nr_encomendas_cliente += 1
                 encomendas_cliente.append(e)
         if nr_encomendas_cliente < 1:
@@ -223,27 +234,27 @@ class Loja:
         prints_3 = ""
 
         for e in encomendas_cliente:
-            carrinho_encomenda = e.obterCarrinhoEncomenda()
+            carrinho_encomenda = e.obter_carrinho_compras()
             id_produtos_encomenda = []
             quantidade_encomenda = 0
-            preco_encomenda = e.obterTotal()
+            preco_encomenda = e.obter_total()
             total_preco += preco_encomenda
             prints_2 = ""
             for k in carrinho_encomenda.keys():
                 id_produtos_encomenda.append(k)
                 quantidade_encomenda += carrinho_encomenda.get(k)
                 produto = self._produtos.get(k)
-                prints_2 + f"{k} - {produto.obterNome()}({produto.obterCategoria()}, {produto.obterPreco()} euros, {carrinho_encomenda.get(k)} unidades);"
+                prints_2 + f"{k} - {produto.obter_nome()}({produto.obter_categoria()}, {produto.obter_preco()} euros, {carrinho_encomenda.get(k)} unidades);"
 
-                if produto.obterCategoria() not in categorias:
-                    categorias.append(produto.obterCategoria())
+                if produto.obter_categoria() not in categorias:
+                    categorias.append(produto.obter_categoria())
                     categorias_quantidades.append(carrinho_encomenda.get(k))
                 else:
-                    categorias_quantidades[categorias.index(produto.obterCategoria())] += carrinho_encomenda.get(k)
+                    categorias_quantidades[categorias.index(produto.obter_categoria())] += carrinho_encomenda.get(k)
             
             total_produtos += len(id_produtos_encomenda)
                     
-            prints_3 + f"ID Encomenda: {e.obterId()}\nTotal Produtos: {len(id_produtos_encomenda)}\nTotal Quantidade: {quantidade_encomenda}\nTotal Preço: {preco_encomenda} euros\n\n" + prints_2
+            prints_3 + f"ID Encomenda: {e.obter_id()}\nTotal Produtos: {len(id_produtos_encomenda)}\nTotal Quantidade: {quantidade_encomenda}\nTotal Preço: {preco_encomenda} euros\n\n" + prints_2
     
         # busca categorias top
         max = 0
@@ -264,5 +275,5 @@ class Loja:
                 ty = [second_place, categorias[i]]
                 second_place = ty.sort()[0]        
 
-        prints_1 = f"OK;\nCliente: {cliente.nome} {cliente.email}\nTotal Encomendas: {nr_encomendas_cliente}\nTotal Produtos: {total_produtos}\nTotal Preço: {round(total_preco, 2)}\nCategoria Top: {first_place}, {second_place}\n--------------------------------------------------------------------------"
+        prints_1 = f"OK;\nCliente: {cliente.obter_nome()} {cliente.obter_email()}\nTotal Encomendas: {nr_encomendas_cliente}\nTotal Produtos: {total_produtos}\nTotal Preço: {round(total_preco, 2)}\nCategoria Top: {first_place}, {second_place}\n--------------------------------------------------------------------------"
         return prints_1 + prints_3

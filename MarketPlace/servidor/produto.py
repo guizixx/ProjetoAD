@@ -16,3 +16,21 @@ class Produto:
 
     def obter_id(self):
         return self.id
+    
+    def obter_nome(self):
+        return self.nome
+    
+    def obter_categoria(self):
+        return self.categoria
+    
+    def obter_preco(self):
+        return self.preco
+    
+    def obter_quantidade(self):
+        return self.quantidade
+    
+    def adicionar_quantidade(self, adicionado):
+        self.quantidade += adicionado
+
+    def alterar_preco(self, novo):
+        self.preco = novo
