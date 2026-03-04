@@ -146,23 +146,30 @@ class Loja:
     # Carrinho
     #--------------
     def adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
+        try:
+            id_cliente = int(id_cliente)
+        except ValueError:
+            raise ExcepcaoComandoInvalido("NOK; Id de cliente inválido.")
+        try:
+            quantidade = int(quantidade)
+        except ValueError:
+            raise ExcepcaoComandoInvalido("NOK; Quantidade inválida.")
+
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("NOK; Cliente não identificado.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("NOK; Produto inexistente na loja.")
-        if quantidade < 0 | self._produtos.get(self.obter_id_produto(nome_produto)).obter_quantidade() < quantidade:
+        if quantidade <= 0:
             raise ExcepcaoComandoInvalido("NOK; Quantidade inválida.")
-        
-        produto_no_carrinho = False
-        for p in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
-            if p == self.obter_id_produto(nome_produto):
-                produto_no_carrinho = True
-        if produto_no_carrinho is True:
-            self._clientes.get(id_cliente).obter_carrinho_compras()[p] += quantidade
+        if self._produtos.get(self.obter_id_produto(nome_produto)).obter_quantidade() < quantidade:
+            raise ExcepcaoComandoInvalido("NOK; Quantidade superior ao stock disponível.")
+
+        id_produto = self.obter_id_produto(nome_produto)
+        if id_produto in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
+            self._clientes.get(id_cliente).obter_carrinho_compras()[id_produto] += quantidade
         else:
-            self._clientes.get(id_cliente).obter_carrinho_compras()[p] = quantidade
-        
-        self._produtos[self.obter_id_produto(nome_produto)] -= quantidade
+            self._clientes.get(id_cliente).obter_carrinho_compras()[id_produto] = quantidade
+        self._produtos.get(id_produto).adicionar_quantidade(-quantidade)
     
     def remover_produto_carrinho(self, id_cliente, nome_produto):
         if id_cliente not in self._clientes.keys():

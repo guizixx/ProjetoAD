@@ -114,7 +114,7 @@ class Processador:
         nome_produto = normalizar_nome(args[0])
         nome_categoria = normalizar_nome(args[1])
         preco = round(int(args[2]), 2)
-        quantidade = args[3]
+        quantidade = int(args[3])
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return f"OK; Produto {produto.nome} criado com sucesso."
