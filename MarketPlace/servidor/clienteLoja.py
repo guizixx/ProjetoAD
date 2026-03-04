@@ -6,7 +6,7 @@ class ClienteLoja:
         self.nome = nome
         self.email = email
         self.pw = pw
-        self.carrinho_compras = {}
+        self.carrinho_compras = {}  # { id_produto : quantidade }
         self.permissao = "Cliente"
         ClienteLoja._contador_global += 1
 

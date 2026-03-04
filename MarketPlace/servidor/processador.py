@@ -1,6 +1,6 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
+# Tiago Telha - nº 60261
 # Descrição: 
 
 from servidor.excepcoes import ExcepcaoComandoInvalido
@@ -86,7 +86,7 @@ class Processador:
 
     def _cmd_cria_categoria(self, args):
         self._validar_n_args(args, 1)
-        nome_categoria = args[0]
+        nome_categoria = normalizar_nome(args[0])
         categoria = self.loja.criar_categoria(nome_categoria)
         return f"Categoria {categoria.nome} criada com sucesso."
     
@@ -101,8 +101,8 @@ class Processador:
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
-        nome_produto = args[0]
-        nome_categoria = args[1]
+        nome_produto = normalizar_nome(args[0])
+        nome_categoria = normalizar_nome(args[1])
         preco = round(args[2], 2)
         quantidade = args[3]
 
@@ -114,7 +114,7 @@ class Processador:
 
     def _cmd_aumenta_stock_produto(self, args):
         self._validar_n_args(args, 2)
-        nome_produto = args[0]
+        nome_produto = normalizar_nome(args[0])
         quantidade_delta = args[1]
         if self.loja.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("O nome do produto não existe.")
@@ -125,7 +125,7 @@ class Processador:
 
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
-        nome_produto = args[0]
+        nome_produto = normalizar_nome(args[0])
         novo_preco = args[1]
         if self.loja.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("O nome do produto não existe.")
@@ -147,23 +147,42 @@ class Processador:
     def _cmd_lista_clientes(self):
         return self.loja.listar_clientes()
 
-    def _cmd_adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
-        
+    def _cmd_adiciona_produto_carrinho(self, args):
+        self._validar_n_args(args, 3)
+        id_cliente = args[0]
+        nome_produto = normalizar_nome(args[1])
+        quantidade = args[2]
 
-        
-        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho."
+        self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
+        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
 
+    def _cmd_remove_produto_carrinho(self, args):
+        self._validar_n_args(args, 2)
+        id_cliente = args[0]
+        nome_produto = normalizar_nome(args[1])
 
+        self.loja.remover_produto_carrinho(id_cliente, nome_produto)
+        return f"Produto {nome_produto} removido com sucesso do carrinho de compras."
 
-    def _cmd_remove_produto_carrinho(self):
-        pass
+    def _cmd_lista_carrinho(self, args):
+        self._validar_n_args(args, 1)
+        id_cliente = args[0]
 
-    def _cmd_lista_carrinho(self):
-        pass
+        return self.loja.lista_carrinho_cliente(self, id_cliente)
 
-    def _cmd_checkout_carrinho(self):
-        pass
-        
+    def _cmd_checkout_carrinho(self, args):
+        self._validar_n_args(args, 1)
+        id_cliente = args[0]
+
+        self.loja.checkout_carrinho(id_cliente)
+        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
+
+    def _cmd_lista_encomendas(self, args):
+        self._validar_n_args(args, 1)
+        id_cliente = args[0]
+
+        return self.loja.listar_encomendas(id_cliente)
+
 
     def _cmd_sai_aplicacao(self, args):
         self._validar_n_args(args, 0)
