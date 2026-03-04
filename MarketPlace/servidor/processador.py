@@ -107,7 +107,7 @@ class Processador:
         self._validar_n_args(args, 1)
         nome_categoria = args[0]
         nome_categoria_removida = self.loja.remover_categoria(nome_categoria)
-        return f"OK; Categoria {nome_categoria_removida} removida com sucesso."
+        return f"Categoria {nome_categoria_removida} removida com sucesso."
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
@@ -117,7 +117,7 @@ class Processador:
         quantidade = int(args[3])
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
-        return f"OK; Produto {produto.nome} criado com sucesso."
+        return f"Produto {produto.nome} criado com sucesso."
     
     def _cmd_lista_produtos(self, args):
         self._validar_n_args(args, 0)
@@ -129,7 +129,7 @@ class Processador:
         quantidade_delta = args[1]
 
         self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
-        return f"OK; Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
+        return f"Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
 
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
@@ -137,7 +137,7 @@ class Processador:
         novo_preco = args[1]
         
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return f"OK; Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
+        return f"Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
 
     def _cmd_cria_cliente(self, args):
         self._validar_n_args(args, 3)
@@ -146,7 +146,7 @@ class Processador:
         pw = args[2]
 
         cliente = self.loja.criar_cliente(nome, email, pw)
-        return f"OK; Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
+        return f"Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
 
     def _cmd_lista_clientes(self, args):
         self._validar_n_args(args, 0)
@@ -159,7 +159,7 @@ class Processador:
         quantidade = args[2]
 
         self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
-        return f"OK; Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
+        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
 
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
@@ -167,7 +167,7 @@ class Processador:
         nome_produto = normalizar_nome(args[1])
 
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
-        return f"OK; Produto {nome_produto} removido com sucesso do carrinho de compras."
+        return f"Produto {nome_produto} removido com sucesso do carrinho de compras."
 
     def _cmd_lista_carrinho(self, args):
         self._validar_n_args(args, 1)
@@ -180,7 +180,7 @@ class Processador:
         id_cliente = args[0]
 
         self.loja.checkout_carrinho(id_cliente)
-        return "OK; Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
+        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
 
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
@@ -190,5 +190,5 @@ class Processador:
 
     def _cmd_sai_aplicacao(self, args):
         self._validar_n_args(args, 0)
-        return "OK; Saindo da aplicação do lado do servidor."
+        return "Saindo da aplicação do lado do servidor."
     
