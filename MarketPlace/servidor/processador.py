@@ -29,7 +29,7 @@ class Processador:
     """
 
     def reset(self): 
-        Loja.reset()
+        self.loja.reset()
 
     def __init__(self):
         self.loja = Loja()

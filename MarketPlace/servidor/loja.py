@@ -207,8 +207,8 @@ class Loja:
         quantidade_counter = 0
         for k in carrinho.keys():
             prod = self._produtos.get(k)
-            quantidade_counter += prod.obter_quantidade()
-            preco_counter += (prod.obter_preco() * carrinho.get(k))
+            quantidade_counter += carrinho.get(k)
+            preco_counter = round(preco_counter + round(prod.obter_preco() * carrinho.get(k), 2), 2)
             linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco()} euros, {prod.obter_quantidade()} unidades);")
         linhasDePrint.insert(0, f"\nTotal Produtos: {len(carrinho)}")
         linhasDePrint.insert(1, f"Total Quantidade: {quantidade_counter}")
