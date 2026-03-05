@@ -116,7 +116,7 @@ class Processador:
         try:
             preco = round(float(args[2]), 2)
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise ExcepcaoComandoInvalido("Preço inválido.")
         try:
             quantidade = int(args[3])
         except ValueError:
@@ -146,7 +146,7 @@ class Processador:
         try:
             novo_preco = float(args[1])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Preço inválida.")
+            raise ExcepcaoComandoInvalido("Preço inválido.")
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
         return f"Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
 

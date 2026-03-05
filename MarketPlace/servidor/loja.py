@@ -208,7 +208,7 @@ class Loja:
         for k in carrinho.keys():
             prod = self._produtos.get(k)
             quantidade_counter += prod.obter_quantidade()
-            preco_counter += (prod.obter_preco() * prod.obter_quantidade())
+            preco_counter += (prod.obter_preco() * carrinho.get(k))
             linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco()} euros, {prod.obter_quantidade()} unidades);")
         linhasDePrint.insert(0, f"\nTotal Produtos: {len(carrinho)}")
         linhasDePrint.insert(1, f"Total Quantidade: {quantidade_counter}")
@@ -224,7 +224,7 @@ class Loja:
         total = 0
         for k in self._clientes.get(id_cliente).obter_carrinho_compras().keys():
             prod = self._produtos.get(k)
-            total += (prod.obter_preco() * prod.obter_quantidade())
+            total += (prod.obter_preco() * self._clientes.get(id_cliente).obter_carrinho_compras().get(k))
 
         encomenda = Encomenda(datetime.now(), deepcopy(self._clientes.get(id_cliente).obter_carrinho_compras()), id_cliente, total)
         self._encomendas[encomenda.obter_id()] = encomenda
