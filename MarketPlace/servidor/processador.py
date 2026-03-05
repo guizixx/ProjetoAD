@@ -196,7 +196,7 @@ class Processador:
         except ValueError:
             raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
-        return self.loja.lista_carrinho_cliente(self, id_cliente)
+        return self.loja.lista_carrinho_cliente(id_cliente)
 
     def _cmd_checkout_carrinho(self, args):
         self._validar_n_args(args, 1)
@@ -206,7 +206,7 @@ class Processador:
             raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
         self.loja.checkout_carrinho(id_cliente)
-        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho"
+        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho."
 
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
@@ -215,7 +215,7 @@ class Processador:
         except ValueError:
             raise ExcepcaoComandoInvalido("Id de cliente inválido.")
 
-        return self.loja.listar_encomendas(id_cliente)
+        return self.loja.lista_encomendas(id_cliente)
 
     def _cmd_sai_aplicacao(self, args):
         self._validar_n_args(args, 0)
