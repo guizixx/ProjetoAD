@@ -1,7 +1,6 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: 
 
 from servidor.excepcoes import ExcepcaoComandoInvalido
 from servidor.excepcoes import ExcepcaoComandoDesconhecido

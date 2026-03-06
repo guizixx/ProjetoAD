@@ -1,7 +1,9 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: 
+# Descrição: classe de domínio responsável pela lógica de negócio
+#               responde aos pedidos do processador 
+#               guarda os dados sobre as entidades (cliente, produto etc.)
 
 from operator import itemgetter
 
