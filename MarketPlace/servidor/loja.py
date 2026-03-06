@@ -275,10 +275,9 @@ class Loja:
                 linhasDePrintProdutos.append(f"{k} - {produto.obter_nome()}({produto.obter_categoria()}, {produto.obter_preco()} euros, {carrinho_encomenda.get(k)} unidades);")
 
                 if produto.obter_categoria() not in categorias_quantidades.keys():
-                    categorias[produto.obter_categoria()] = carrinho_encomenda.get(k)
-                    categorias_quantidades.append([produto.obter_categoria(), carrinho_encomenda.get(k)])
+                    categorias_quantidades[produto.obter_categoria()] = carrinho_encomenda.get(k)
                 else:
-                    categorias_quantidades[produto.obter_categorria()] += carrinho_encomenda.get(k)
+                    categorias_quantidades[produto.obter_categoria()] = categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k)
 
             linhasDePrintEncomendas.append(f"ID Encomenda: {e.obter_id()}")
             linhasDePrintEncomendas.append(f"Data Encomenda: {e.obter_data()}")
@@ -292,19 +291,36 @@ class Loja:
         
         # busca categorias top
         categorias_top_ordenadas_por_valor = dict(sorted(categorias_quantidades.items(), key=itemgetter(1)))
-        categorias_top_ordenadas_por_alfabeto = dict(sorted(categorias_top_ordenadas_por_valor.items()))
-        
-        counter = 0
-        for cat in categorias_top_ordenadas_por_alfabeto.keys():
-            if counter == 2:
-                break
-            if counter == 0:
-                first_place = cat
-                counter += 1
-            if counter == 1:
-                second_place = cat
-                counter += 1
+        first_place = ""
+        second_place = ""
+        valores = list(categorias_top_ordenadas_por_valor.values())
+        keys = list(categorias_top_ordenadas_por_valor.keys())
 
+        if len(keys) == 1:
+            first_place = keys[0]
+        elif len(keys) == 2:
+            if valores[0] == valores[1]:
+                first_place = keys.sort()[0]
+                second_place = keys.sort()[1]
+            else:
+                first_place = keys[0]
+                second_place = keys[1]
+        elif len(keys) >= 3:
+            if valores[0] == valores[1]:
+                if valores[1] == valores[2]:
+                    first_place = keys[:3].sort()[0]
+                    second_place = keys[:3].sort()[1]
+                else:
+                    first_place = keys[:2].sort()[0]
+                    second_place = keys[:2].sort()[1]
+            else:
+                first_place = keys[0]
+                if valores[1] == valores[2]:
+                    second_place = keys[1:3].sort()[0]
+                else:
+                    first_place = keys[0]
+                    second_place = keys[1]
+        
         linhasDePrint.append(f"\nCliente: {cliente.obter_nome()} {cliente.obter_email()}")
         linhasDePrint.append(f"Total Encomendas: {nr_encomendas_cliente}")
         linhasDePrint.append(f"Total Produtos: {total_produtos}")
