@@ -73,13 +73,14 @@ class Loja:
         return counter
     
     def remover_categoria(self, nome):
-        categoria_id = self.obter_id_categoria(normalizar_nome(nome))
+        norm_nome = normalizar_nome(nome)
+        categoria_id = self.obter_id_categoria(norm_nome)
         if categoria_id is None:
             raise ExcepcaoComandoInvalido("Categoria Inexistente")
-        if self.obter_nr_produtos_categoria(nome) > 0:
-            raise ExcepcaoComandoInvalido(f"Categoria {nome} ainda tem produtos associados.")
+        if self.obter_nr_produtos_categoria(norm_nome) > 0:
+            raise ExcepcaoComandoInvalido(f"Categoria {norm_nome} ainda tem produtos associados.")
         self._categorias.pop(categoria_id)
-        return nome 
+        return norm_nome 
     
     #-----------------------
     # Produtos
