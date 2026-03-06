@@ -1,7 +1,7 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
-# Descrição: 
+# Tiago Telha - nº 60261
+# Descrição: classes utilitárias ao uso de sockets
 
 import ipaddress
 

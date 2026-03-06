@@ -1,7 +1,9 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Classe de domínio ClienteLoja - representa um cliente da loja
+# Descrição: Classe de domínio ClienteLoja - representa um cliente da loja com id, nome, email, password, carrinho de compras e permissao
+#            O id é gerado automaticamente.
+#            (o atributo permissão ainda não é útil nesta fase do projeto, mas foi adicionado preemptivamente)
 
 class ClienteLoja:
     _contador_global = 1

@@ -1,7 +1,7 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 
-# Descrição: 
+# Descrição: classes Exceção utilizadas no projeto.
 
 # -----------------------------------
 #   Excepções de Configuracao

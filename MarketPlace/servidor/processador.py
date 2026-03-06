@@ -1,6 +1,8 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
+# Descrição: Camada processador interpreta os comandos do cliente e faz validação de argumentos,
+#            antes de chamar a loja para executar a lógica de negócio e formar as respostas necessárias
 
 from servidor.excepcoes import ExcepcaoComandoInvalido
 from servidor.excepcoes import ExcepcaoComandoDesconhecido
