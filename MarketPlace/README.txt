@@ -28,6 +28,8 @@ TESTES EXECUTADOS
        LISTA_ENCOMENDAS
     - Resultado: todos os testes passaram com sucesso.
 
+3. testes dos comandos no terminal para verificação e consolidação de lógica, respostas e erros
+
 Para correr os testes:
     python -m unittest testes.py
     python -m unittest testes2.py
