@@ -148,7 +148,7 @@ class Processador:
         except ValueError:
             raise ExcepcaoComandoInvalido("Preço inválido.")
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return f"Preco de {nome_produto} alterado para {novo_preco} € com sucesso."
+        return f"Preco de {nome_produto} alterado para {novo_preco:.2f} € com sucesso."
 
     def _cmd_cria_cliente(self, args):
         self._validar_n_args(args, 3)
