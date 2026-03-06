@@ -209,10 +209,10 @@ class Loja:
             prod = self._produtos.get(k)
             quantidade_counter += carrinho.get(k)
             preco_counter = round(preco_counter + round(prod.obter_preco() * carrinho.get(k), 2), 2)
-            linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco()} euros, {prod.obter_quantidade()} unidades);")
+            linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);")
         linhasDePrint.insert(0, f"\nTotal Produtos: {len(carrinho)}")
         linhasDePrint.insert(1, f"Total Quantidade: {quantidade_counter}")
-        linhasDePrint.insert(2, f"Total Preço: {preco_counter} euros")
+        linhasDePrint.insert(2, f"Total Preço: {preco_counter:.2f} euros")
         return "\n".join(linhasDePrint)
 
     def checkout_carrinho(self, id_cliente):
