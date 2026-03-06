@@ -6,7 +6,6 @@
 #               guarda os dados sobre as entidades (cliente, produto etc.)
 
 from operator import itemgetter
-
 from shared.utilities import normalizar_nome
 from servidor.excepcoes import ExcepcaoComandoInvalido, ExcepcaoSupermercadoCategoriaJaExistente
 from servidor.categoria import Categoria
@@ -242,10 +241,10 @@ class Loja:
     def lista_encomendas(self, id_cliente):
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("Id inválido.")
+        
         cliente = self._clientes.get(id_cliente)
         nr_encomendas_cliente = 0
         encomendas_cliente = []
-
         for e in self._encomendas.values():
             if e.obter_cliente_id() == id_cliente:
                 nr_encomendas_cliente += 1
@@ -259,6 +258,7 @@ class Loja:
         categorias_quantidades = {}
         linhasDePrint = []
         linhasDePrintEncomendas = []
+
         for e in encomendas_cliente:
             carrinho_encomenda = e.obter_carrinho_compras()
             quantidade_encomenda = 0
@@ -266,6 +266,7 @@ class Loja:
             total_preco += preco_encomenda
             linhasDePrintProdutos = []
             total_produtos_encomenda = 0
+
             for k in carrinho_encomenda.keys():
                 total_produtos_encomenda += 1
                 quantidade_encomenda += carrinho_encomenda.get(k)[0]
@@ -279,7 +280,7 @@ class Loja:
                     categorias_quantidades[produto.obter_categoria()] = carrinho_encomenda.get(k)[0]
                 else:
                     categorias_quantidades[produto.obter_categoria()] = (categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k)[0])
-
+            # formataçao para cada encomenda a ser listada
             linhasDePrintEncomendas.append(f"ID Encomenda: {e.obter_id()}")
             linhasDePrintEncomendas.append(f"Data Encomenda: {e.obter_data()}")
             linhasDePrintEncomendas.append(f"Total Produtos: {total_produtos_encomenda}")
@@ -287,6 +288,7 @@ class Loja:
             linhasDePrintEncomendas.append(f"Total Preço: {preco_encomenda} euros\n")
             for l in range(len(linhasDePrintProdutos)):
                 linhasDePrintEncomendas.append(linhasDePrintProdutos[l])
+                # verificaçao para quando acaba a listagem de uma encomenda serem inseridos linebreaks antes da outra encomenda
                 if ( l+1 ) == len(linhasDePrintProdutos):
                     linhasDePrintEncomendas.append("\n\n")
         
@@ -322,10 +324,12 @@ class Loja:
                     first_place = keys[0]
                     second_place = keys[1]
         
+        # formataçao inicial da lista de encomendas
         linhasDePrint.append(f"\nCliente: {cliente.obter_nome()} {cliente.obter_email()}")
         linhasDePrint.append(f"Total Encomendas: {nr_encomendas_cliente}")
         linhasDePrint.append(f"Total Produtos: {total_produtos}")
         linhasDePrint.append(f"Total Preço: {round(total_preco, 2)}")
+        # verificaçao second_place para não aparecer 'first_place, '
         if second_place == "":
             linhasDePrint.append(f"Categoria Top: {first_place}")
         else:
