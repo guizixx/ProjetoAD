@@ -228,7 +228,13 @@ class Loja:
             prod = self._produtos.get(k)
             total += (prod.obter_preco() * self._clientes.get(id_cliente).obter_carrinho_compras().get(k))
 
-        encomenda = Encomenda(datetime.now().replace(microsecond=0), deepcopy(self._clientes.get(id_cliente).obter_carrinho_compras()), id_cliente, total)
+        # carrinho passa a guardar [quantidade, preço] em vez de quantidade
+        # para guardar o preço do produto no momento da encomenda
+        carrinho_encomenda = deepcopy(self._clientes.get(id_cliente).obter_carrinho_compras())
+        for k in carrinho_encomenda.keys():
+            carrinho_encomenda[k] = [carrinho_encomenda.get(k), self._produtos.get(k).obter_preco()]
+
+        encomenda = Encomenda(datetime.now().replace(microsecond=0), carrinho_encomenda, id_cliente, total)
         self._encomendas[encomenda.obter_id()] = encomenda
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
 
@@ -265,17 +271,17 @@ class Loja:
             total_produtos_encomenda = 0
             for k in carrinho_encomenda.keys():
                 total_produtos_encomenda += 1
-                quantidade_encomenda += carrinho_encomenda.get(k)
+                quantidade_encomenda += carrinho_encomenda.get(k)[0]
                 produto = self._produtos.get(k)
                 if produto.obter_id() not in produtos:
                     total_produtos += 1
                     produtos.append(produto.obter_id())
-                linhasDePrintProdutos.append(f"{k} - {produto.obter_nome()}({produto.obter_categoria()}, {produto.obter_preco()} euros, {carrinho_encomenda.get(k)} unidades);")
+                linhasDePrintProdutos.append(f"{k} - {produto.obter_nome()}({produto.obter_categoria()}, {carrinho_encomenda.get(k)[1]} euros, {carrinho_encomenda.get(k)[0]} unidades);")
 
                 if produto.obter_categoria() not in categorias_quantidades.keys():
-                    categorias_quantidades[produto.obter_categoria()] = carrinho_encomenda.get(k)
+                    categorias_quantidades[produto.obter_categoria()] = carrinho_encomenda.get(k)[0]
                 else:
-                    categorias_quantidades[produto.obter_categoria()] = (categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k))
+                    categorias_quantidades[produto.obter_categoria()] = (categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k)[0])
 
             linhasDePrintEncomendas.append(f"ID Encomenda: {e.obter_id()}")
             linhasDePrintEncomendas.append(f"Data Encomenda: {e.obter_data()}")
