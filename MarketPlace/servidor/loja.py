@@ -135,10 +135,10 @@ class Loja:
             raise ExcepcaoComandoInvalido("O preço tem de ser um número positivo.")
         
         self._produtos.get(self.obter_id_produto(nome)).alterar_preco(novo_preco)
+
     #---------------
     # Clientes
     #---------------
-
     def criar_cliente(self, nome, email, pw):
         for c in self._clientes.values():
             if c.obter_email() == email.lower():
@@ -178,11 +178,6 @@ class Loja:
         self._produtos.get(id_produto).adicionar_quantidade(-quantidade)
     
     def remover_produto_carrinho(self, id_cliente, nome_produto):
-        try:
-            id_cliente = int(id_cliente)
-        except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
-
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("Id inválido.")
         if self.obter_id_produto(nome_produto) is None:
@@ -197,7 +192,6 @@ class Loja:
         quantidade = carrinho[id_produto]
         carrinho.pop(id_produto)
         self._produtos.get(id_produto).adicionar_quantidade(quantidade)
-
 
     def lista_carrinho_cliente(self, id_cliente):
         if id_cliente not in self._clientes.keys():
