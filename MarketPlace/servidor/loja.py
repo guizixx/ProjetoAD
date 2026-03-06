@@ -239,7 +239,6 @@ class Loja:
     def lista_encomendas(self, id_cliente):
         if id_cliente not in self._clientes.keys():
             raise ExcepcaoComandoInvalido("Id inválido.")
-        
         cliente = self._clientes.get(id_cliente)
         nr_encomendas_cliente = 0
         encomendas_cliente = []
@@ -254,7 +253,6 @@ class Loja:
         total_produtos = 0
         produtos = []
         total_preco = 0
-        categorias = []
         categorias_quantidades = {}
         linhasDePrint = []
         linhasDePrintEncomendas = []
@@ -277,7 +275,7 @@ class Loja:
                 if produto.obter_categoria() not in categorias_quantidades.keys():
                     categorias_quantidades[produto.obter_categoria()] = carrinho_encomenda.get(k)
                 else:
-                    categorias_quantidades[produto.obter_categoria()] = categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k)
+                    categorias_quantidades[produto.obter_categoria()] = (categorias_quantidades.get(produto.obter_categoria()) + carrinho_encomenda.get(k))
 
             linhasDePrintEncomendas.append(f"ID Encomenda: {e.obter_id()}")
             linhasDePrintEncomendas.append(f"Data Encomenda: {e.obter_data()}")
@@ -290,7 +288,7 @@ class Loja:
                     linhasDePrintEncomendas.append("\n\n")
         
         # busca categorias top
-        categorias_top_ordenadas_por_valor = dict(sorted(categorias_quantidades.items(), key=itemgetter(1)))
+        categorias_top_ordenadas_por_valor = dict(sorted(categorias_quantidades.items(), key=itemgetter(1), reverse=True))
         first_place = ""
         second_place = ""
         valores = list(categorias_top_ordenadas_por_valor.values())
@@ -300,23 +298,23 @@ class Loja:
             first_place = keys[0]
         elif len(keys) == 2:
             if valores[0] == valores[1]:
-                first_place = keys.sort()[0]
-                second_place = keys.sort()[1]
+                first_place = sorted(keys)[0]
+                second_place = sorted(keys)[1]
             else:
                 first_place = keys[0]
                 second_place = keys[1]
         elif len(keys) >= 3:
             if valores[0] == valores[1]:
                 if valores[1] == valores[2]:
-                    first_place = keys[:3].sort()[0]
-                    second_place = keys[:3].sort()[1]
+                    first_place = sorted(keys[:3])[0]
+                    second_place = sorted(keys[:3])[1]
                 else:
-                    first_place = keys[:2].sort()[0]
-                    second_place = keys[:2].sort()[1]
+                    first_place = sorted(keys[:2])[0]
+                    second_place = sorted(keys[:2])[1]
             else:
                 first_place = keys[0]
                 if valores[1] == valores[2]:
-                    second_place = keys[1:3].sort()[0]
+                    second_place = sorted(keys[1:3])[0]
                 else:
                     first_place = keys[0]
                     second_place = keys[1]
