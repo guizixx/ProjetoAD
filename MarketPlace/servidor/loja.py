@@ -3,6 +3,8 @@
 # Tiago Telha - nº 60261
 # Descrição: 
 
+from operator import itemgetter
+
 from shared.utilities import normalizar_nome
 from servidor.excepcoes import ExcepcaoComandoInvalido, ExcepcaoSupermercadoCategoriaJaExistente
 from servidor.categoria import Categoria
@@ -209,10 +211,10 @@ class Loja:
             prod = self._produtos.get(k)
             quantidade_counter += carrinho.get(k)
             preco_counter = round(preco_counter + round(prod.obter_preco() * carrinho.get(k), 2), 2)
-            linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco()} euros, {prod.obter_quantidade()} unidades);")
+            linhasDePrint.append(f"{k} - {prod.obter_nome()}({self.obter_id_categoria(prod.obter_categoria())}-{prod.obter_categoria()}, {prod.obter_preco():.2f} euros, {carrinho.get(k)} unidades);")
         linhasDePrint.insert(0, f"\nTotal Produtos: {len(carrinho)}")
         linhasDePrint.insert(1, f"Total Quantidade: {quantidade_counter}")
-        linhasDePrint.insert(2, f"Total Preço: {preco_counter} euros")
+        linhasDePrint.insert(2, f"Total Preço: {preco_counter:.2f} euros")
         return "\n".join(linhasDePrint)
 
     def checkout_carrinho(self, id_cliente):
@@ -226,7 +228,7 @@ class Loja:
             prod = self._produtos.get(k)
             total += (prod.obter_preco() * self._clientes.get(id_cliente).obter_carrinho_compras().get(k))
 
-        encomenda = Encomenda(datetime.now(), deepcopy(self._clientes.get(id_cliente).obter_carrinho_compras()), id_cliente, total)
+        encomenda = Encomenda(datetime.now().replace(microsecond=0), deepcopy(self._clientes.get(id_cliente).obter_carrinho_compras()), id_cliente, total)
         self._encomendas[encomenda.obter_id()] = encomenda
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
 
@@ -250,9 +252,10 @@ class Loja:
             return f"Sem encomendas."
         
         total_produtos = 0
+        produtos = []
         total_preco = 0
         categorias = []
-        categorias_quantidades = []
+        categorias_quantidades = {}
         linhasDePrint = []
         linhasDePrintEncomendas = []
         for e in encomendas_cliente:
@@ -263,42 +266,44 @@ class Loja:
             linhasDePrintProdutos = []
             total_produtos_encomenda = 0
             for k in carrinho_encomenda.keys():
-                total_produtos += 1
                 total_produtos_encomenda += 1
                 quantidade_encomenda += carrinho_encomenda.get(k)
                 produto = self._produtos.get(k)
+                if produto.obter_id() not in produtos:
+                    total_produtos += 1
+                    produtos.append(produto.obter_id())
                 linhasDePrintProdutos.append(f"{k} - {produto.obter_nome()}({produto.obter_categoria()}, {produto.obter_preco()} euros, {carrinho_encomenda.get(k)} unidades);")
 
-                if produto.obter_categoria() not in categorias:
-                    categorias.append(produto.obter_categoria())
-                    categorias_quantidades.append(carrinho_encomenda.get(k))
+                if produto.obter_categoria() not in categorias_quantidades.keys():
+                    categorias[produto.obter_categoria()] = carrinho_encomenda.get(k)
+                    categorias_quantidades.append([produto.obter_categoria(), carrinho_encomenda.get(k)])
                 else:
-                    categorias_quantidades[categorias.index(produto.obter_categoria())] += carrinho_encomenda.get(k)
-                    
+                    categorias_quantidades[produto.obter_categorria()] += carrinho_encomenda.get(k)
+
             linhasDePrintEncomendas.append(f"ID Encomenda: {e.obter_id()}")
+            linhasDePrintEncomendas.append(f"Data Encomenda: {e.obter_data()}")
             linhasDePrintEncomendas.append(f"Total Produtos: {total_produtos_encomenda}")
             linhasDePrintEncomendas.append(f"Total Quantidade: {quantidade_encomenda}")
             linhasDePrintEncomendas.append(f"Total Preço: {preco_encomenda} euros\n")
-            for l in linhasDePrintProdutos:
-                linhasDePrintEncomendas.append(l)
+            for l in range(len(linhasDePrintProdutos)):
+                linhasDePrintEncomendas.append(linhasDePrintProdutos[l])
+                if ( l+1 ) == len(linhasDePrintProdutos):
+                    linhasDePrintEncomendas.append("\n\n")
+        
         # busca categorias top
-        max = 0
-        max_2 = 0
-        first_place = ""
-        second_place = ""
-        for i in range(len(categorias)):
-            if categorias_quantidades[i] > max:
-                max = categorias_quantidades[i]
-                first_place = categorias[i]
-            elif categorias_quantidades[i] == max:
-                ty = [first_place, categorias[i]]
-                first_place = ty.sort()[0]
-            elif max > categorias_quantidades[i] > max_2:
-                max_2 = categorias_quantidades[i]
-                second_place = categorias[i]
-            elif categorias_quantidades[i] == max_2:
-                ty = [second_place, categorias[i]]
-                second_place = ty.sort()[0]        
+        categorias_top_ordenadas_por_valor = dict(sorted(categorias_quantidades.items(), key=itemgetter(1)))
+        categorias_top_ordenadas_por_alfabeto = dict(sorted(categorias_top_ordenadas_por_valor.items()))
+        
+        counter = 0
+        for cat in categorias_top_ordenadas_por_alfabeto.keys():
+            if counter == 2:
+                break
+            if counter == 0:
+                first_place = cat
+                counter += 1
+            if counter == 1:
+                second_place = cat
+                counter += 1
 
         linhasDePrint.append(f"\nCliente: {cliente.obter_nome()} {cliente.obter_email()}")
         linhasDePrint.append(f"Total Encomendas: {nr_encomendas_cliente}")
