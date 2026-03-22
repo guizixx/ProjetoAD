@@ -7,11 +7,11 @@
 
 from operator import itemgetter
 from shared.utilities import normalizar_nome
-from servidor.excepcoes import ExcepcaoComandoInvalido, ExcepcaoSupermercadoCategoriaJaExistente
-from servidor.categoria import Categoria
-from servidor.produto import Produto
-from servidor.clienteLoja import ClienteLoja
-from servidor.encomenda import Encomenda
+from excepcoes import ExcepcaoComandoInvalido, ExcepcaoSupermercadoCategoriaJaExistente
+from categoria import Categoria
+from produto import Produto
+from clienteLoja import ClienteLoja
+from encomenda import Encomenda
 from datetime import datetime
 from copy import deepcopy
 

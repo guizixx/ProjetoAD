@@ -47,7 +47,7 @@ def main():
             print(f"SERVIDOR> {resposta}")
 
             if comando.strip().upper() == "EXIT":
-                break
+                exit()
 
     except OSError as e:
         print(f"CLIENTE> Erro na comunicação: {e}")

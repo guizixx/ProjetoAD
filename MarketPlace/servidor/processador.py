@@ -4,15 +4,20 @@
 # Descrição: Camada processador interpreta os comandos do cliente e faz validação de argumentos,
 #            antes de chamar a loja para executar a lógica de negócio e formar as respostas necessárias
 
-from servidor.excepcoes import ExcepcaoComandoInvalido
-from servidor.excepcoes import ExcepcaoComandoDesconhecido
-from servidor.excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
-from servidor.excepcoes import ExcepcaoSupermercado
-from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
-from servidor.excepcoes import ExcepcaoComandoVazio
+from excepcoes import ExcepcaoComandoInvalido
+from excepcoes import ExcepcaoComandoDesconhecido
+from excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
+from excepcoes import ExcepcaoSupermercado
+from excepcoes import ExcepcaoComandoNaoInterpretavel
+from excepcoes import ExcepcaoComandoVazio
 import shlex
-from servidor.loja import Loja
+from loja import Loja
+from servidor.rede import TCPSocketServidor
 from shared.utilities import normalizar_nome
+
+# classe processador é o skeleton
+# alterar tudo o que envolve o novo protocolo de mnsgs
+#   -validaçao, estruturaçao, divisao e processamento
 
 class Processador:
 
@@ -32,9 +37,11 @@ class Processador:
     def reset(self): 
         self.loja.reset()
 
-    def __init__(self):
+    def __init__(self, pontoAcesso):
+        self.rede = TCPSocketServidor(pontoAcesso.endereco_ip, pontoAcesso.port)
         self.loja = Loja()
         
+        # alterar handlers para o novo protocolo de mnsgs
         self.HANDLERS = {
             "CRIA_CATEGORIA": self._cmd_cria_categoria,
             "LISTA_CATEGORIAS": self._cmd_lista_categorias,
@@ -52,6 +59,28 @@ class Processador:
             "LISTA_ENCOMENDAS": self._cmd_lista_encomendas,
             "EXIT": self._cmd_sai_aplicacao
         }
+
+    def accept(self): 
+        self.rede.accept()
+        print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.rede.ponto_acesso.endereco_ip, self.rede.ponto_acesso.port))
+
+
+    def envia(self, msg_str): 
+        print("Estou a enviar", msg_str)
+        bytes = msg_str.encode()
+        self.rede.envia(bytes)
+
+    def recebe(self): 
+        bytes = self.rede.recebe()
+        resposta_str = bytes.decode()
+        print(f"SERVIDOR> Comando recebido: {resposta_str}")
+        return resposta_str
+
+    def close(self): 
+        self.rede.close()
+
+    def closeall(self): 
+        self.rede.closeall()
 
     def _dividir_comando(self, comando): 
         try:
@@ -81,19 +110,22 @@ class Processador:
             raise ExcepcaoComandoDesconhecido(nome)
         return comando
     
-    def processar_comando(self, comando):
+    def processar_comando(self):
         try:
+            comando = self.recebe()
+
             nome_comando, args = self._dividir_comando(comando)
             handler = self._obter_handler(nome_comando)
         
             resultado = handler(args)
-            return f"OK; {resultado}"
+            self.rede.envia(resultado.encode())
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
-            return f"NOK; {e}"
+            raise e
 
     #------------------------
     # _cmd_ handlers
     #------------------------
+
     def _cmd_cria_categoria(self, args):
         self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])

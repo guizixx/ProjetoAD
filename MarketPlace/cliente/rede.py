@@ -1,12 +1,12 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
-# Tiago Telha - nº 
+# Tiago Telha - nº 60261
 # Descrição: Camada de transporte TCP do cliente - conecta ao servidor e move strings
 
 import socket
 from shared.socket_utilities import PontoAcesso
 
-
+# ver se a classe continua a ser TCPsocketclient ou  Rede
 class TCPSocketCliente:
     """
     Camada Transporte:
@@ -15,26 +15,31 @@ class TCPSocketCliente:
     - não interpreta comandos
     """
 
+    # ver utilizaçao do ponto_acesso ou host,port
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso
         self.socket_cliente = None
 
     def ligar(self):
+        # ver se isto acontece na funçao ou nos atributos da classe
+        # ( como esta no rede_cliente da PL3 )
         self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_cliente.connect((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
         print(f"CLIENTE> Ligado ao servidor em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
-    def enviar_comando(self, comando):
-        self.socket_cliente.sendall((comando + "\n").encode('utf-8'))
+    def envia(self, bytes):
+        self.socket_cliente.sendall(bytes)
 
-    def receber_resposta(self):
+    def recebe(self):
+        # ver com o gui o recv
+        # passar o decode dos dados para o stub
         resposta = b""
         while True:
             parte = self.socket_cliente.recv(4096)
             resposta += parte
             if resposta.endswith(b"\n"):
                 break
-        return resposta.decode('utf-8').strip()
+        return resposta
     
     def desligar(self):
         if self.socket_cliente is not None:
