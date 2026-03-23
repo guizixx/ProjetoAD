@@ -6,7 +6,7 @@
 from sys import argv
 import sys
 from  shared.socket_utilities import PontoAcesso
-from shared.excepcoes import ExcepcaoConfiguracaoInvalida
+from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida
 from cliente.rede import TCPSocketCliente
 
 def main():

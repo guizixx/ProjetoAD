@@ -7,6 +7,7 @@
 
 from operator import itemgetter
 from shared.utilities import normalizar_nome
+from shared import excepcoes_shared
 from servidor.excepcoes import ExcepcaoComandoInvalido, ExcepcaoSupermercadoCategoriaJaExistente
 from servidor.categoria import Categoria
 from servidor.produto import Produto

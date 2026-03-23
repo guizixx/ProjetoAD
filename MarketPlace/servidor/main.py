@@ -8,7 +8,7 @@ import select as sel
 import time
 from sys import stdin
 from servidor.processador import Processador
-from shared.excepcoes import ExcepcaoConfiguracaoInvalida
+from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida
 from shared.socket_utilities import PontoAcesso
 
 def main():

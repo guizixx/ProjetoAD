@@ -11,6 +11,7 @@ from servidor.excepcoes import ExcepcaoSupermercado
 from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
 from servidor.excepcoes import ExcepcaoComandoVazio
 from shared.excepcoes_shared import OpCodes
+import shared.excepcoes_shared
 import shlex
 from servidor.loja import Loja
 from servidor.rede import TCPSocketServidor
@@ -128,7 +129,7 @@ class Processador:
         self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])
         categoria = self.loja.criar_categoria(nome_categoria)
-        return f"Categoria {categoria.nome} criada com sucesso."
+        return [OpCodes.CRIA_CATEGORIA, [categoria.nome]]
     
     def _cmd_lista_categorias(self, args):        
         self._validar_n_args(args, 0)
@@ -138,7 +139,7 @@ class Processador:
         self._validar_n_args(args, 1)
         nome_categoria = args[0]
         nome_categoria_removida = self.loja.remover_categoria(nome_categoria)
-        return f"Categoria {nome_categoria_removida} removida com sucesso."
+        return [OpCodes.REMOVE_CATEGORIA, nome_categoria_removida]
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
@@ -154,7 +155,7 @@ class Processador:
             raise ExcepcaoComandoInvalido("Quantidade inválida.")
 
         produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
-        return f"Produto {produto.nome} criado com sucesso."
+        return [OpCodes.CRIA_PRODUTO, [produto.nome]]
     
     def _cmd_lista_produtos(self, args):
         self._validar_n_args(args, 0)
@@ -169,7 +170,7 @@ class Processador:
             raise ExcepcaoComandoInvalido("Quantidade inválida.")
 
         self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
-        return f"Stock do produto {nome_produto} aumentado em {quantidade_delta} unidades com sucesso."
+        return [OpCodes.AUMENTA_STOCK, [nome_produto]]
 
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
@@ -179,7 +180,7 @@ class Processador:
         except ValueError:
             raise ExcepcaoComandoInvalido("Preço inválido.")
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return f"Preco de {nome_produto} alterado para {novo_preco:.2f} € com sucesso."
+        return [OpCodes.ATUALIZA_PRECO, [nome_produto]]
 
     def _cmd_cria_cliente(self, args):
         self._validar_n_args(args, 3)
@@ -188,8 +189,8 @@ class Processador:
         pw = args[2]
 
         cliente = self.loja.criar_cliente(nome, email, pw)
-        return f"Cliente {cliente.nome} criado com sucesso com identificador único {cliente.id}."
-
+        return [OpCodes.CRIA_CLIENTE, [cliente.nome]] 
+    
     def _cmd_lista_clientes(self, args):
         self._validar_n_args(args, 0)
         return self.loja.listar_clientes()
@@ -199,33 +200,33 @@ class Processador:
         try:
             id_cliente = int(args[0])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise shared.excepcoes_shared.ClienteNaoExiste()
         try:
             quantidade = int(args[2])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Quantidade inválida.")
+            raise shared.excepcoes_shared.QuantidadeInvalida()
         nome_produto = normalizar_nome(args[1])
 
         self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
-        return f"Produto {normalizar_nome(nome_produto)} adicionado com sucesso ao carrinho de compras."
-
+        return [OpCodes.ADICIONA_PRODUTO_CARRINHO,[nome_produto]]
+    
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
         try:
             id_cliente = int(args[0])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise shared.excepcoes_shared.ClienteNaoExiste()
         nome_produto = normalizar_nome(args[1])
 
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
-        return f"Produto {nome_produto} removido com sucesso do carrinho de compras."
-
+        return [OpCodes.REMOVE_PRODUTO_CARRINHO, [nome_produto]]
+    
     def _cmd_lista_carrinho(self, args):
         self._validar_n_args(args, 1)
         try:
             id_cliente = int(args[0])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise shared.excepcoes_shared.ClienteNaoExiste()
 
         return self.loja.lista_carrinho_cliente(id_cliente)
 
@@ -234,21 +235,16 @@ class Processador:
         try:
             id_cliente = int(args[0])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise shared.excepcoes_shared.ClienteNaoExiste()
 
-        self.loja.checkout_carrinho(id_cliente)
-        return "Checkout de carrinho de compras efetuado com sucesso. Encomenda criada com sucesso a partir do carrinho."
-
+        encomenda = self.loja.checkout_carrinho(id_cliente)
+        return [OpCodes.CHECKOUT_CARRINHO, [encomenda.id]]
+    
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
         try:
             id_cliente = int(args[0])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Id de cliente inválido.")
+            raise shared.excepcoes_shared.ClienteNaoExiste()
 
         return self.loja.lista_encomendas(id_cliente)
-
-    def _cmd_sai_aplicacao(self, args):
-        self._validar_n_args(args, 0)
-        return "Saindo da aplicação do lado do servidor."
-    
