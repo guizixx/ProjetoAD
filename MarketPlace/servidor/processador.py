@@ -4,14 +4,14 @@
 # Descrição: Camada processador interpreta os comandos do cliente e faz validação de argumentos,
 #            antes de chamar a loja para executar a lógica de negócio e formar as respostas necessárias
 
-from excepcoes import ExcepcaoComandoInvalido
-from excepcoes import ExcepcaoComandoDesconhecido
-from excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
-from excepcoes import ExcepcaoSupermercado
-from excepcoes import ExcepcaoComandoNaoInterpretavel
-from excepcoes import ExcepcaoComandoVazio
+from servidor.excepcoes import ExcepcaoComandoInvalido
+from servidor.excepcoes import ExcepcaoComandoDesconhecido
+from servidor.excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
+from servidor.excepcoes import ExcepcaoSupermercado
+from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
+from servidor.excepcoes import ExcepcaoComandoVazio
 import shlex
-from loja import Loja
+from servidor.loja import Loja
 from servidor.rede import TCPSocketServidor
 from shared.utilities import normalizar_nome
 
@@ -38,10 +38,10 @@ class Processador:
         self.loja.reset()
 
     def __init__(self, pontoAcesso):
-        self.rede = TCPSocketServidor(pontoAcesso.endereco_ip, pontoAcesso.port)
+        self.rede = TCPSocketServidor(pontoAcesso)
         self.loja = Loja()
         
-        # alterar handlers para o novo protocolo de mnsgs
+        # alterar keys dos handlers para o novo protocolo de mnsgs
         self.HANDLERS = {
             "CRIA_CATEGORIA": self._cmd_cria_categoria,
             "LISTA_CATEGORIAS": self._cmd_lista_categorias,
@@ -63,7 +63,6 @@ class Processador:
     def accept(self): 
         self.rede.accept()
         print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.rede.ponto_acesso.endereco_ip, self.rede.ponto_acesso.port))
-
 
     def envia(self, msg_str): 
         print("Estou a enviar", msg_str)
