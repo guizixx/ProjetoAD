@@ -10,6 +10,7 @@ from servidor.excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
 from servidor.excepcoes import ExcepcaoSupermercado
 from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
 from servidor.excepcoes import ExcepcaoComandoVazio
+from shared.excepcoes_shared import OpCodes
 import shlex
 from servidor.loja import Loja
 from servidor.rede import TCPSocketServidor
@@ -41,23 +42,21 @@ class Processador:
         self.rede = TCPSocketServidor(pontoAcesso)
         self.loja = Loja()
         
-        # alterar keys dos handlers para o novo protocolo de mnsgs
         self.HANDLERS = {
-            "CRIA_CATEGORIA": self._cmd_cria_categoria,
-            "LISTA_CATEGORIAS": self._cmd_lista_categorias,
-            "REMOVE_CATEGORIA": self._cmd_remove_categoria,
-            "CRIA_PRODUTO": self._cmd_cria_produto,
-            "LISTA_PRODUTOS": self._cmd_lista_produtos,
-            "AUMENTA_STOCK_PRODUTO": self._cmd_aumenta_stock_produto,
-            "ATUALIZA_PRECO_PRODUTO": self._cmd_atualiza_preco_produto,
-            "CRIA_CLIENTE": self._cmd_cria_cliente,
-            "LISTA_CLIENTES": self._cmd_lista_clientes,
-            "ADICIONA_PRODUTO_CARRINHO": self._cmd_adiciona_produto_carrinho,
-            "REMOVE_PRODUTO_CARRINHO": self._cmd_remove_produto_carrinho,
-            "LISTA_CARRINHO": self._cmd_lista_carrinho,
-            "CHECKOUT_CARRINHO": self._cmd_checkout_carrinho,
-            "LISTA_ENCOMENDAS": self._cmd_lista_encomendas,
-            "EXIT": self._cmd_sai_aplicacao
+            OpCodes.CRIA_CATEGORIA: self._cmd_cria_categoria,
+            OpCodes.LISTA_CATEGORIAS: self._cmd_lista_categorias,
+            OpCodes.REMOVE_CATEGORIA: self._cmd_remove_categoria,
+            OpCodes.CRIA_PRODUTO: self._cmd_cria_produto,
+            OpCodes.LISTA_PRODUTOS: self._cmd_lista_produtos,
+            OpCodes.AUMENTA_STOCK: self._cmd_aumenta_stock_produto,
+            OpCodes.ATUALIZA_PRECO: self._cmd_atualiza_preco_produto,
+            OpCodes.CRIA_CLIENTE: self._cmd_cria_cliente,
+            OpCodes.LISTA_CLIENTES: self._cmd_lista_clientes,
+            OpCodes.ADICIONA_PRODUTO_CARRINHO: self._cmd_adiciona_produto_carrinho,
+            OpCodes.REMOVE_PRODUTO_CARRINHO: self._cmd_remove_produto_carrinho,
+            OpCodes.LISTA_CARRINHO: self._cmd_lista_carrinho,
+            OpCodes.CHECKOUT_CARRINHO: self._cmd_checkout_carrinho,
+            OpCodes.LISTA_ENCOMENDAS: self._cmd_lista_encomendas,
         }
 
     def accept(self): 
@@ -102,22 +101,22 @@ class Processador:
         if len(args) != n:
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
 
-    def _obter_handler(self, nome):
+    def _obter_handler(self, opcode):
         try:
-            comando = self.HANDLERS[nome] 
+            comando = self.HANDLERS[opcode] 
         except KeyError:
-            raise ExcepcaoComandoDesconhecido(nome)
+            raise ExcepcaoComandoDesconhecido(opcode)
         return comando
     
     def processar_comando(self):
         try:
             comando = self.recebe()
 
-            nome_comando, args = self._dividir_comando(comando)
-            handler = self._obter_handler(nome_comando)
+            opcode_comando, args = self._dividir_comando(comando)
+            handler = self._obter_handler(opcode_comando)
         
             resultado = handler(args)
-            self.rede.envia(resultado.encode())
+            self.envia(resultado)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
 
