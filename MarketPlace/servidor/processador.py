@@ -43,6 +43,7 @@ class Processador:
         self.rede = TCPSocketServidor(pontoAcesso)
         self.loja = Loja()
         
+                        # opcode:  [ handler, permissão mínima para poder executar a operação ]
         self.HANDLERS = {
             OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3],
             OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 3],
@@ -51,7 +52,7 @@ class Processador:
             OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 2],
             OpCodes.AUMENTA_STOCK: [self._cmd_aumenta_stock_produto, 2],
             OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2],
-            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente],     #permissao tem de ser 0
+            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0], 
             OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2],
             OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1],
             OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1],
@@ -87,32 +88,45 @@ class Processador:
         except ValueError as e:
             raise ExcepcaoComandoNaoInterpretavel(comando)
         
-        if len(partes) == 1:
-            nome_comando = partes[0]
-            argumentos = []
-            return nome_comando, argumentos
-        elif len(partes) > 1: 
-            nome_comando = partes[0].upper()
-            argumentos = partes[1:]
-            return nome_comando, argumentos
-        else: 
+        if len(partes) == 0:
             raise ExcepcaoComandoVazio()
-    
+        elif len(partes) != 4:
+            raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
+        
+        try:
+            op_code = int(partes[0])
+            perfil = int(partes[2])
+            utilizador = int(partes[3])
+        except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+            raise e
+        if int(op_code) not in self.HANDLERS.keys():
+            raise shared.excepcoes_shared.ComandoDesconhecido()
+        if perfil not in [0, 1, 2, 3]:
+            raise shared.excepcoes_shared.PerfilInvalido()
+        
+        argumentos = partes[1]
+        # to-fix: ver se é a melhor maneira de verificar se o segundo argumento é uma lista
+        if argumentos[0] == '[' & argumentos[-1] == ']':
+            raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
+        norm_argumentos = argumentos.replace("[", "").replace("]", "")
+        try:
+            
+            partes_args = shlex.split(norm_argumentos)
+        except ValueError as e:
+            raise ExcepcaoComandoNaoInterpretavel(comando)
+        return op_code, partes_args, perfil, utilizador
+          
     def _validar_n_args(self, args, n):
         if len(args) != n:
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
         
     def _validar_permissao(self, perfil, operacao):
-        if (operacao != OpCodes.CRIA_CLIENTE) & (perfil == 0):
-            raise shared.excepcoes_shared.UtilizadorNaoAutenticado()
+        if self.HANDLERS[operacao][1] > perfil:
+            raise shared.excepcoes_shared.OperacaoNaoAutorizada()
         
-        # melhorar este nested if
-        # nested porque se a operaçao for cria_cliente, vai correr a segunda verificaçao, o que levaria a erro 
-        if (operacao != OpCodes.CRIA_CLIENTE):
-            if self.HANDLERS[operacao][1] > perfil:
-                raise shared.excepcoes_shared.OperacaoNaoAutorizada()
+    def _validar_utilizador(self, perfil, utilizador, operacao):
+        return self.loja.validar_utilizador(perfil, utilizador, operacao)
 
-        # ver resto das permissoes para outros comandos
             
     def _obter_handler(self, opcode):
         try:
@@ -124,32 +138,13 @@ class Processador:
     def processar_comando(self):
         try:
             comando = self.recebe()
-            
-            opcode_comando, args = self._dividir_comando(comando)
-
-            if len(args) != 3:
-                raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
-
-            if int(opcode_comando) not in self.HANDLERS.keys():
-                raise shared.excepcoes_shared.ComandoDesconhecido()
-            
-            # to-fix: ver se é a melhor maneira de verificar se o segundo argumento é uma lista
-            if args[1][0] == '[' & args[1][-1] == ']':
-                raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
-            
-            try:
-                perfil = int(args[2])
-                utilizador = int(args[3])
-            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
-                raise e
-
+            opcode, args, perfil, utilizador = self._dividir_comando(comando)
             self._validar_permissao(perfil, utilizador)
+            handler = self._obter_handler(opcode)
 
-            handler = self._obter_handler(int(opcode_comando))
-
-            # há handlers que precisam do id_utilizador
-            # ver como passar o id_utilizador
-            # args está a passar tudo menos o opcode
+            # o handler da ação lista_encomendas precisa do id_utilizador
+            if opcode == OpCodes.LISTA_ENCOMENDAS:
+                args.append(utilizador)
         
             resultado = handler(args)
             self.envia(resultado)

@@ -28,19 +28,22 @@ class ExcepcaoPortoInvalido(ExcepcaoConfiguracaoInvalida):
 # ----------------------------------
 
 class ExcepcaoProtocolo(Exception):
-
     def __init__(self, msg):
         super().__init__(msg)
 
 class ExcecaoNumeroCamposInvalido(ExcepcaoProtocolo):
-
     def __init__(self):
-        super().__init__("Pedido inválido. Pedido deve ter 4 campos.")
+        super().__init__("Pedido inválido. Pedido deve ter 4 campos.", 
+                         OpCodes.NUMERO_CAMPOS_INVALIDO)
 
 class ExcecaoArgumentoInvalido(ExcepcaoProtocolo):
-
     def __init__(self):
-        super().__init__("O segundo campo deve ser uma lista.")
+        super().__init__("O segundo campo deve ser uma lista.", 
+                         OpCodes.ARGUMENTOS_NAO_SAO_LISTA)
+
+class ExcecaoInputInvalido(ExcepcaoProtocolo):
+    def __init__(self):
+        super().__init__()
 
 # ---------------------------------------------
 # Códigos de Operação (ver excepcoes abaixo)
@@ -97,6 +100,11 @@ class OpCodes:
     ERRO_GENERICO = 39900
     OP_CODE_INVALIDO = 39901
     MENSAGEM_MAL_FORMADA = 39902
+    PEDIDO_NAO_E_LISTA = 39903
+    NUMERO_CAMPOS_INVALIDO = 39904
+    ARGUMENTOS_NAO_SAO_LISTA = 39905
+    PERFIL_INVALIDO = 39906
+    ID_UTILIZADOR_INVALIDO = 39907
     NUMERO_ARGUMENTOS_INVALIDO = 39914
     TIPO_ARGUMENTO_INVALIDO = 39915
     VALOR_ARGUMENTO_INVALIDO = 39916
@@ -104,6 +112,7 @@ class OpCodes:
     OPERACAO_NAO_AUTORIZADA = 39920
     UTILIZADOR_NAO_AUTENTICADO = 39921
     ERRO_INTERNO_SERVIDOR = 39928
+    
 
     # -------------------------
     # ERROS DE NEGÓCIO (3xxxx)
@@ -273,6 +282,16 @@ class PasswordInvalida(ExcepcaoValidacao):
             "Password inválida.",
             OpCodes.PASSWORD_INVALIDA
         )
+
+class PerfilInvalido(ExcepcaoValidacao):
+    def __init__(self):
+        super().__init__("Perfil inválido.", 
+                         OpCodes.PERFIL_INVALIDO)
+        
+class UtilizadorInvalido(ExcepcaoValidacao):
+    def __init__(self):
+        super().__init__("Utilizador inválido.", 
+                         OpCodes.ID_UTILIZADOR_INVALIDO)
 
 
 # ----------------------------------

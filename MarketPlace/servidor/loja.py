@@ -339,3 +339,15 @@ class Loja:
         for l in linhasDePrintEncomendas:
             linhasDePrint.append(l)
         return "\n".join(linhasDePrint)
+    
+    #-----------------
+    # AUXILIARES
+    #-----------------
+    def validar_utilizador(self, perfil, utilizador):
+        if (perfil != 0) & (utilizador not in self._clientes.keys()):
+            raise excepcoes_shared.UtilizadorInvalido()
+        
+        if perfil != self.clientes[utilizador].permissao:
+            raise excepcoes_shared.OperacaoNaoAutorizada()
+        
+        # de certeza que vao faltar casos a adicionar aqui para poder validar o utilizador em todas as situaçoes
