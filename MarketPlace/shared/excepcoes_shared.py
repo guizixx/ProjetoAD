@@ -22,14 +22,25 @@ class ExcepcaoPortoInvalido(ExcepcaoConfiguracaoInvalida):
     def __init__(self, porto):
         super().__init__(f"Porto {porto} inválido. Porto deve ser inteiro entre 1024 e 65535")
 
-# -----------------------------------
-#   Excepções de Sistema Distribuído
-# -----------------------------------
 
-# TODO: Acrescentar excepcoes
+# ----------------------------------
+#   EXCEÇÕES DE PROTOCOLO
+# ----------------------------------
 
+class ExcepcaoProtocolo(Exception):
 
+    def __init__(self, msg):
+        super().__init__(msg)
 
+class ExcecaoNumeroCamposInvalido(ExcepcaoProtocolo):
+
+    def __init__(self):
+        super().__init__("Pedido inválido. Pedido deve ter 4 campos.")
+
+class ExcecaoArgumentoInvalido(ExcepcaoProtocolo):
+
+    def __init__(self):
+        super().__init__("O segundo campo deve ser uma lista.")
 
 # ---------------------------------------------
 # Códigos de Operação (ver excepcoes abaixo)
@@ -379,3 +390,4 @@ class UtilizadorNaoAutenticado(ExcepcaoInterna):
             "Utilizador não autenticado.",
             OpCodes.UTILIZADOR_NAO_AUTENTICADO
         )
+

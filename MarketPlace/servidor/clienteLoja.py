@@ -6,16 +6,14 @@
 #            (o atributo permissão ainda não é útil nesta fase do projeto, mas foi adicionado preemptivamente)
 
 class ClienteLoja:
-    _contador_global = 1
 
-    def __init__(self, nome, email, pw):
-        self.id = ClienteLoja._contador_global
+    def __init__(self, nome, email, pw, permissao, id):
+        self.id = id
         self.nome = nome
         self.email = email
         self.pw = pw
         self.carrinho_compras = {}  # { id_produto : quantidade }
-        self.permissao = "Cliente"
-        ClienteLoja._contador_global += 1
+        self.permissao = permissao
 
     def obter_id(self):
         return self.id
@@ -31,6 +29,9 @@ class ClienteLoja:
     
     def obter_permissao(self):
         return self.permissao
+    
+    def alterar_permissao(self, nova_permissao):
+        self.permissao = nova_permissao
 
 
 
