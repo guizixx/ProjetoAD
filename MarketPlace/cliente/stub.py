@@ -1,10 +1,12 @@
-from rede import Rede
+from rede import TCPSocketCliente
+from shared import excepcoes_shared
+import pickle, struct
 
 # copiado da pl3, adaptar o que for necessario
 class Stub:
 
     def __init__(self, HOST, PORT):
-        self.rede = Rede(HOST, PORT)
+        self.rede = TCPSocketCliente(HOST, PORT)
         
     def processa(self, msg_str):
         self.envia(msg_str)
@@ -12,12 +14,19 @@ class Stub:
         print ('Recebi: %s' % resposta_str)
 
     def envia(self, msg_str): 
-        bytes = msg_str.encode()
-        self.rede.envia(bytes)
+        try:
+            bytes = pickle.dumps(msg_str, protocol=pickle.HIGHEST_PROTOCOL)
+            size = struct.pack('i', len(msg_str))
+        except excepcoes_shared.ExcecaoSerializacaoInvalida as e:
+            raise e
+        try:
+            self.rede.envia(size, bytes)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
+        print("Estou a enviar", msg_str)
 
     def recebe(self): 
-        bytes = self.rede.recebe()
-        resposta_str = bytes.decode()
+        
         return resposta_str
 
     def close(self): 

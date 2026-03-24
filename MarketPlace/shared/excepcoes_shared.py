@@ -23,28 +23,6 @@ class ExcepcaoPortoInvalido(ExcepcaoConfiguracaoInvalida):
         super().__init__(f"Porto {porto} inválido. Porto deve ser inteiro entre 1024 e 65535")
 
 
-# ----------------------------------
-#   EXCEÇÕES DE PROTOCOLO
-# ----------------------------------
-
-class ExcepcaoProtocolo(Exception):
-    def __init__(self, msg):
-        super().__init__(msg)
-
-class ExcecaoNumeroCamposInvalido(ExcepcaoProtocolo):
-    def __init__(self):
-        super().__init__("Pedido inválido. Pedido deve ter 4 campos.", 
-                         OpCodes.NUMERO_CAMPOS_INVALIDO)
-
-class ExcecaoArgumentoInvalido(ExcepcaoProtocolo):
-    def __init__(self):
-        super().__init__("O segundo campo deve ser uma lista.", 
-                         OpCodes.ARGUMENTOS_NAO_SAO_LISTA)
-
-class ExcecaoInputInvalido(ExcepcaoProtocolo):
-    def __init__(self):
-        super().__init__()
-
 # ---------------------------------------------
 # Códigos de Operação (ver excepcoes abaixo)
 # ---------------------------------------------
@@ -105,6 +83,9 @@ class OpCodes:
     ARGUMENTOS_NAO_SAO_LISTA = 39905
     PERFIL_INVALIDO = 39906
     ID_UTILIZADOR_INVALIDO = 39907
+    SERIALIZACAO_INVALIDA = 39908
+    DESSERIALIZACAO_INVALIDA = 39909
+    LIGACAO_INTERROMPIDA = 39912
     NUMERO_ARGUMENTOS_INVALIDO = 39914
     TIPO_ARGUMENTO_INVALIDO = 39915
     VALOR_ARGUMENTO_INVALIDO = 39916
@@ -190,6 +171,62 @@ class ExcepcaoInterna(ExcepcaoBase):
 # Excepções Específicas (A LANÇAR ESPECIFICAMENTE)
 # -------------------------------------------------
 #--------------------------------------------------
+
+# ----------------------------------
+#   EXCEÇÕES DE PROTOCOLO
+# ----------------------------------
+
+class ExcepcaoProtocolo(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
+class ExcecaoNumeroCamposInvalido(ExcepcaoProtocolo):
+    def __init__(self):
+        super().__init__("Pedido inválido. Pedido deve ter 4 campos.", 
+                         OpCodes.NUMERO_CAMPOS_INVALIDO)
+
+class ExcecaoArgumentoInvalido(ExcepcaoProtocolo):
+    def __init__(self):
+        super().__init__("O segundo campo deve ser uma lista.", 
+                         OpCodes.ARGUMENTOS_NAO_SAO_LISTA)
+
+class ExcecaoInputInvalido(ExcepcaoProtocolo):
+    def __init__(self):
+        super().__init__()
+
+# ----------------------------------
+#   EXCEÇÕES DE Serializacao
+# ----------------------------------
+
+class ExcepcaoSerializacao(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
+class ExcecaoSerializacaoInvalida(ExcepcaoSerializacao):
+    def __init__(self):
+        super().__init__(OpCodes.SERIALIZACAO_INVALIDA)   
+
+class ExcecaoDesserializacaoInvalida(ExcepcaoSerializacao):
+    def __init__(self):
+        super().__init__("Erro ao serializar dados antes de enviar.", 
+                         OpCodes.DESSERIALIZACAO_INVALIDA)              
+
+
+
+# ----------------------------------
+#   EXCEÇÕES DE COMUNICAÇÃO
+# ----------------------------------
+
+class ExcepcaoComunicacao(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+
+class ExcecaoLigacaoInterrompida(ExcepcaoComunicacao):
+    def __init__(self):
+        super().__init__("Cliente/servidor fechou a ligação inesperadamente.", 
+                         OpCodes.LIGACAO_INTERROMPIDA)              
+
+
 
 # ----------------------------------
 #   EXCEÇÕES DE COMANDO

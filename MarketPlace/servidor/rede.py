@@ -5,7 +5,7 @@
 
 import socket
 from shared.socket_utilities import PontoAcesso
-
+from shared import excepcoes_shared
 # ver se a classe continua a ser TCPSocketserver ou Rede
 class TCPSocketServidor:
     """
@@ -24,8 +24,12 @@ class TCPSocketServidor:
         self.socket_servidor.listen(1)
         print(f"SERVIDOR> A escutar em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
-    def envia(self, bytes): 
-        self.conn_sock.sendall(bytes) 
+    def envia(self, size, bytes): 
+        try:
+            self.socket_servidor.sendall(size)
+            self.socket_servidor.sendall(bytes)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
 
     def recebe(self): 
         bytes = self.conn_sock.recv(1024)
@@ -36,8 +40,8 @@ class TCPSocketServidor:
 
     def closeall(self): 
         self.conn_sock.close()
-        self.sock.close()
+        self.socket_servidor.close()
 
     def accept(self): 
-        (conn_sock, addr) = self.sock.accept()
+        (conn_sock, addr) = self.socket_servidor.accept()
         self.conn_sock = conn_sock

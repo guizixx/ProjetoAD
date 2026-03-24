@@ -5,8 +5,9 @@
 
 import ipaddress
 
-from shared.excepcoes import ExcepcaoIPInvalido
-from shared.excepcoes import ExcepcaoPortoInvalido
+from shared.excepcoes_shared import ExcepcaoIPInvalido
+from shared.excepcoes_shared import ExcepcaoPortoInvalido
+from shared.excepcoes_shared import ExcecaoLigacaoInterrompida
 
 class PontoAcesso:
     def __init__(self, endereco_ip, porto):
@@ -34,3 +35,15 @@ class PontoAcesso:
                 ipaddress.ip_address(endereco_ip)
         except ValueError as e:
             raise ExcepcaoIPInvalido(endereco_ip)
+        
+    def receive_all(socket, length):
+        try:
+            resposta = b""
+            while len(resposta) < length:
+                parte = socket.recv(length-len(resposta))
+                resposta += parte
+                if resposta.endswith(b"\n"):
+                    break
+            return resposta
+        except ExcecaoLigacaoInterrompida as e:
+            raise e

@@ -16,6 +16,7 @@ import shlex
 from servidor.loja import Loja
 from servidor.rede import TCPSocketServidor
 from shared.utilities import normalizar_nome
+import pickle, struct
 
 # classe processador é o skeleton
 # alterar tudo o que envolve o novo protocolo de mnsgs
@@ -66,13 +67,23 @@ class Processador:
         print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.rede.ponto_acesso.endereco_ip, self.rede.ponto_acesso.port))
 
     def envia(self, msg_str): 
+        try:
+            bytes = pickle.dumps(msg_str, protocol=pickle.HIGHEST_PROTOCOL)
+            size = struct.pack('i', len(msg_str))
+        except shared.excepcoes_shared.ExcecaoSerializacaoInvalida as e:
+            raise e
+        try:
+            self.rede.envia(size, bytes)
+        except shared.excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
         print("Estou a enviar", msg_str)
-        bytes = msg_str.encode()
-        self.rede.envia(bytes)
 
     def recebe(self): 
         bytes = self.rede.recebe()
-        resposta_str = bytes.decode()
+        try:
+            resposta_str = bytes.decode()
+        except shared.excepcoes_shared.ExcecaoDesserializacaoInvalida as e:
+            raise e
         print(f"SERVIDOR> Comando recebido: {resposta_str}")
         return resposta_str
 
@@ -109,8 +120,8 @@ class Processador:
         if argumentos[0] == '[' & argumentos[-1] == ']':
             raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
         norm_argumentos = argumentos.replace("[", "").replace("]", "")
+
         try:
-            
             partes_args = shlex.split(norm_argumentos)
         except ValueError as e:
             raise ExcepcaoComandoNaoInterpretavel(comando)
@@ -138,6 +149,9 @@ class Processador:
     def processar_comando(self):
         try:
             comando = self.recebe()
+        except shared.excepcoes_shared.ErroInterno as e: 
+            raise e
+        try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
             self._validar_permissao(perfil, utilizador)
             handler = self._obter_handler(opcode)
@@ -147,10 +161,13 @@ class Processador:
                 args.append(utilizador)
         
             resultado = handler(args)
-            self.envia(resultado)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
-        
+        try:
+            self.envia(resultado)
+        except shared.excepcoes_shared.ErroInterno as e:
+            raise e
+            
 
     #------------------------
     # _cmd_ handlers
