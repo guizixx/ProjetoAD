@@ -88,7 +88,7 @@ class Processador:
             raise ExcepcaoComandoNaoInterpretavel(comando)
         
         if len(partes) == 1:
-            nome_comando = partes[0].upper()
+            nome_comando = partes[0]
             argumentos = []
             return nome_comando, argumentos
         elif len(partes) > 1: 
@@ -127,7 +127,7 @@ class Processador:
             
             opcode_comando, args = self._dividir_comando(comando)
 
-            if len(args) != 4:
+            if len(args) != 3:
                 raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
 
             if int(opcode_comando) not in self.HANDLERS.keys():
@@ -146,6 +146,10 @@ class Processador:
             self._validar_permissao(perfil, utilizador)
 
             handler = self._obter_handler(int(opcode_comando))
+
+            # há handlers que precisam do id_utilizador
+            # ver como passar o id_utilizador
+            # args está a passar tudo menos o opcode
         
             resultado = handler(args)
             self.envia(resultado)
