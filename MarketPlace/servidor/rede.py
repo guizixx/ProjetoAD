@@ -7,6 +7,7 @@ import socket
 import struct
 from shared.socket_utilities import PontoAcesso
 from shared import excepcoes_shared
+import struct
 # ver se a classe continua a ser TCPSocketserver ou Rede
 class TCPSocketServidor:
     """

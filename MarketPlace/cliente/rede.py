@@ -4,7 +4,7 @@
 # Descrição: Camada de transporte TCP do cliente - conecta ao servidor e move strings
 
 import socket
-from shared.socket_utilities import PontoAcesso
+from shared.socket_utilities import PontoAcesso, receive_all
 from shared import excepcoes_shared
 import struct
 

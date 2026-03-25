@@ -36,14 +36,15 @@ class PontoAcesso:
         except ValueError as e:
             raise ExcepcaoIPInvalido(endereco_ip)
         
-    def receive_all(socket, length):
-        try:
-            resposta = b""
-            while len(resposta) < length:
-                parte = socket.recv(length-len(resposta))
-                resposta += parte
-                if resposta.endswith(b"\n"):
-                    break
-            return resposta
-        except ExcecaoLigacaoInterrompida as e:
-            raise e
+        
+def receive_all(socket, length):
+    try:
+        resposta = b""
+        while len(resposta) < length:
+            parte = socket.recv(length-len(resposta))
+            resposta += parte
+            if resposta.endswith(b"\n"):
+                break
+        return resposta
+    except ExcecaoLigacaoInterrompida as e:
+        raise e
