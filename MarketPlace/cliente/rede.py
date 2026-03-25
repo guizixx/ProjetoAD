@@ -19,23 +19,39 @@ class TCPSocketCliente:
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso
         self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def ligar(self):
+        self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_cliente.connect((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
         print(f"CLIENTE> Ligado ao servidor em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
-    def envia(self, size, bytes):        
+    def receive_all(self, length):
+        dados = b""
+        while len(dados) < length:
+            parte = self.socket_cliente.recv(length - len(dados))
+            if not parte:
+                raise excepcoes_shared.ExcecaoLigacaoInterrompida()
+            dados += parte
+        return dados
+
+    def envia(self, bytes):        
         try:
-            self.socket_cliente.sendall(size)
+            tamanho = struct.pack('!I', len(bytes))
+            self.socket_cliente.sendall(tamanho)
             self.socket_cliente.sendall(bytes)
-        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
-            raise e
+        except OSError:
+            raise excepcoes_shared.ExcecaoLigacaoInterrompida()
 
     def recebe(self):
         try:
-            size_bytes = self.socket_cliente.recv(4)
-            size = struct.unpack('i', size_bytes)[0]
-        except: # acabar aqui
-        msg_bytes = PontoAcesso.receive_all(self.socket_cliente, size)
-        return msg_bytes
+            tamanho_bytes = self.receive_all(4)
+            tamanho = struct.unpack('!I', tamanho_bytes)[0]
+            dados = self.receive_all(tamanho)
+            return dados
+        except excepcoes_shared.ExcecaoLigacaoInterrompida:
+            raise
+        except OSError:
+            raise excepcoes_shared.ExcecaoLigacaoInterrompida()
         
 
     
