@@ -4,8 +4,9 @@
 # Descrição: Camada de transporte TCP do servidor - aceita ligações e move strings
 
 import socket
-from shared.socket_utilities import PontoAcesso
+from shared.socket_utilities import PontoAcesso, receive_all
 from shared import excepcoes_shared
+import struct
 # ver se a classe continua a ser TCPSocketserver ou Rede
 class TCPSocketServidor:
     """
@@ -24,17 +25,22 @@ class TCPSocketServidor:
         self.socket_servidor.listen(1)
         print(f"SERVIDOR> A escutar em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
-    def envia(self, size, bytes): 
+    def envia(self, size, msg): 
         try:
-            self.socket_servidor.sendall(size)
-            self.socket_servidor.sendall(bytes)
+            self.conn_sock.sendall(size)
+            self.conn_sock.sendall(msg)
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
 
     def recebe(self): 
-        bytes = self.conn_sock.recv(1024)
-        return bytes
-
+        try:
+            size_bytes = self.conn_sock.recv(4)
+            size = struct.unpack('i', size_bytes)[0]
+            msg_bytes = receive_all(self.conn_sock, size)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
+        return msg_bytes
+    
     def close(self): 
         self.conn_sock.close()
 

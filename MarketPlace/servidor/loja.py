@@ -30,7 +30,6 @@ class Loja:
         Categoria._contador_global = 1
         Produto._contador_global = 1
         Encomenda._contador_global = 1
-        ClienteLoja._contador_global = 1
         self._categorias = {}
         self._produtos = {}
         self._clientes = {}
@@ -41,9 +40,8 @@ class Loja:
     # Categorias
     # -----------------------------
     def criar_categoria(self, nome):
-        nome = normalizar_nome(nome)
         if self.obter_id_categoria(nome) is not None:
-            raise ExcepcaoSupermercadoCategoriaJaExistente(nome)
+            raise excepcoes_shared.CategoriaJaExiste(nome)
         categoria = Categoria(nome)
         self._categorias[categoria.id] = categoria
         return categoria
@@ -163,8 +161,6 @@ class Loja:
     # Carrinho
     #--------------
     def adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
-        if id_cliente not in self._clientes.keys():
-            raise ExcepcaoComandoInvalido("Cliente não identificado.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("Produto inexistente na loja.")
         if quantidade <= 0:
@@ -180,8 +176,6 @@ class Loja:
         self._produtos.get(id_produto).adicionar_quantidade(-quantidade)
     
     def remover_produto_carrinho(self, id_cliente, nome_produto):
-        if id_cliente not in self._clientes.keys():
-            raise ExcepcaoComandoInvalido("Id inválido.")
         if self.obter_id_produto(nome_produto) is None:
             raise ExcepcaoComandoInvalido("Produto inexistente na loja.")
 
@@ -196,8 +190,6 @@ class Loja:
         self._produtos.get(id_produto).adicionar_quantidade(quantidade)
 
     def lista_carrinho_cliente(self, id_cliente):
-        if id_cliente not in self._clientes.keys():
-            raise ExcepcaoComandoInvalido("Id inválido.")
         carrinho = self._clientes.get(id_cliente).obter_carrinho_compras()
         if len(carrinho) < 1:
             return "Carrinho Vazio."
@@ -215,8 +207,6 @@ class Loja:
         return "\n".join(linhasDePrint)
 
     def checkout_carrinho(self, id_cliente):
-        if id_cliente not in self._clientes.keys():
-            raise ExcepcaoComandoInvalido("Id inválido.")
         if len(self._clientes.get(id_cliente).obter_carrinho_compras()) < 1:
             raise ExcepcaoComandoInvalido("Cliente sem produtos no carrinho.")
 
@@ -234,15 +224,12 @@ class Loja:
         encomenda = Encomenda(datetime.now().replace(microsecond=0), carrinho_encomenda, id_cliente, total)
         self._encomendas[encomenda.obter_id()] = encomenda
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
-
+        return encomenda.id
 
     #-----------------
     # Encomendas
     #-----------------
     def lista_encomendas(self, id_cliente):
-        if id_cliente not in self._clientes.keys():
-            raise ExcepcaoComandoInvalido("Id inválido.")
-        
         cliente = self._clientes.get(id_cliente)
         nr_encomendas_cliente = 0
         encomendas_cliente = []

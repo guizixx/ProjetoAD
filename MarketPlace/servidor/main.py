@@ -10,6 +10,7 @@ from sys import stdin
 from servidor.processador import Processador
 from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida
 from shared.socket_utilities import PontoAcesso
+from skeleton import Skeleton
 
 def main():
 
@@ -21,6 +22,7 @@ def main():
         ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = sys.argv[1])  
         processador = Processador(ponto_acesso)
         sock_escuta = processador.rede.socket_servidor
+        skeleton = Skeleton(sock_escuta)
 
         print("SERVIDOR> Configuracao do servidor válida. ")
 
@@ -61,9 +63,9 @@ def main():
                         # adicionar outras excecoes
                         # ver se o codigo faz sentido assim
 
-                        processador.accept()
-                        processador.processar_comando()
-                        processador.close()
+                        skeleton.accept()
+                        processador.processar_comando(skeleton.recebe())
+                        skeleton.close()
                         
                     except OSError as e:
                         print(f"SERVIDOR> Erro na comunicação com o cliente: {e}")

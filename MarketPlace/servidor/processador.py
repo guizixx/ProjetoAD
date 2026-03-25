@@ -14,11 +14,8 @@ from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
 import shlex
 from servidor.loja import Loja
-from servidor.rede import TCPSocketServidor
 from shared.utilities import normalizar_nome
-import pickle, struct
 
-# classe processador é o skeleton
 # alterar tudo o que envolve o novo protocolo de mnsgs
 #   -validaçao, estruturaçao, divisao e processamento
 
@@ -40,10 +37,8 @@ class Processador:
     def reset(self): 
         self.loja.reset()
 
-    def __init__(self, pontoAcesso):
-        self.rede = TCPSocketServidor(pontoAcesso)
+    def __init__(self):
         self.loja = Loja()
-        
                         # opcode:  [ handler, permissão mínima para poder executar a operação ]
         self.HANDLERS = {
             OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3],
@@ -62,52 +57,19 @@ class Processador:
             OpCodes.LISTA_ENCOMENDAS: [self._cmd_lista_encomendas, 1]
         }
 
-    def accept(self): 
-        self.rede.accept()
-        print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.rede.ponto_acesso.endereco_ip, self.rede.ponto_acesso.port))
-
-    def envia(self, msg_str): 
-        try:
-            bytes = pickle.dumps(msg_str, protocol=pickle.HIGHEST_PROTOCOL)
-            size = struct.pack('i', len(msg_str))
-        except shared.excepcoes_shared.ExcecaoSerializacaoInvalida as e:
-            raise e
-        try:
-            self.rede.envia(size, bytes)
-        except shared.excepcoes_shared.ExcecaoLigacaoInterrompida as e:
-            raise e
-        print("Estou a enviar", msg_str)
-
-    def recebe(self): 
-        bytes = self.rede.recebe()
-        try:
-            resposta_str = bytes.decode()
-        except shared.excepcoes_shared.ExcecaoDesserializacaoInvalida as e:
-            raise e
-        print(f"SERVIDOR> Comando recebido: {resposta_str}")
-        return resposta_str
-
-    def close(self): 
-        self.rede.close()
-
-    def closeall(self): 
-        self.rede.closeall()
-
     def _dividir_comando(self, comando): 
-        try:
-            partes = shlex.split(comando)
-        except ValueError as e:
+        if type(comando) != list:
             raise ExcepcaoComandoNaoInterpretavel(comando)
         
-        if len(partes) == 0:
+        if len(comando) == 0:
             raise ExcepcaoComandoVazio()
-        elif len(partes) != 4:
+        elif len(comando) != 4:
             raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
         
         try:
-            op_code = int(partes[0])
-            perfil = int(partes[2])
-            utilizador = int(partes[3])
+            op_code = int(comando[0])
+            perfil = int(comando[2])
+            utilizador = int(comando[3])
         except shared.excepcoes_shared.TipoArgumentoInvalido as e:
             raise e
         if int(op_code) not in self.HANDLERS.keys():
@@ -115,17 +77,11 @@ class Processador:
         if perfil not in [0, 1, 2, 3]:
             raise shared.excepcoes_shared.PerfilInvalido()
         
-        argumentos = partes[1]
-        # to-fix: ver se é a melhor maneira de verificar se o segundo argumento é uma lista
-        if argumentos[0] == '[' & argumentos[-1] == ']':
+        argumentos = comando[1]
+        if type(argumentos) != list:
             raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
-        norm_argumentos = argumentos.replace("[", "").replace("]", "")
 
-        try:
-            partes_args = shlex.split(norm_argumentos)
-        except ValueError as e:
-            raise ExcepcaoComandoNaoInterpretavel(comando)
-        return op_code, partes_args, perfil, utilizador
+        return op_code, argumentos, perfil, utilizador
           
     def _validar_n_args(self, args, n):
         if len(args) != n:
@@ -146,27 +102,24 @@ class Processador:
             raise shared.excepcoes_shared.ErroInterno()
         return comando
     
-    def processar_comando(self):
-        try:
-            comando = self.recebe()
-        except shared.excepcoes_shared.ErroInterno as e: 
-            raise e
+    def processar_comando(self, comando):
         try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
             self._validar_permissao(perfil, utilizador)
             handler = self._obter_handler(opcode)
 
-            # o handler da ação lista_encomendas precisa do id_utilizador
-            if opcode == OpCodes.LISTA_ENCOMENDAS:
+            # o handler das ações de gestão de carrinho precisam do id_utilizador
+            if opcode in  {OpCodes.ADICIONA_PRODUTO_CARRINHO, 
+                           OpCodes.REMOVE_PRODUTO_CARRINHO, 
+                           OpCodes.CHECKOUT_CARRINHO, 
+                           OpCodes.LISTA_CARRINHO}:
                 args.append(utilizador)
         
             resultado = handler(args)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
-        try:
-            self.envia(resultado)
-        except shared.excepcoes_shared.ErroInterno as e:
-            raise e
+       
+        return resultado
             
 
     #------------------------
@@ -176,6 +129,10 @@ class Processador:
     def _cmd_cria_categoria(self, args):
         self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])
+        if nome_categoria in ['', []]:
+            raise shared.excepcoes_shared.ExcepcaoNegocio("Nome da categoria vazio após normalização.", 
+                                                   OpCodes.CATEGORIA_NAO_EXISTE)
+        
         categoria = self.loja.criar_categoria(nome_categoria)
         return [OpCodes.CRIA_CATEGORIA, [categoria.nome]]
     
@@ -244,31 +201,33 @@ class Processador:
         return self.loja.listar_clientes()
 
     def _cmd_adiciona_produto_carrinho(self, args):
-        self._validar_n_args(args, 2)
+        self._validar_n_args(args, 3)
         try:
-            quantidade = int(args[2])
+            quantidade = int(args[1])
         except ValueError:
             raise shared.excepcoes_shared.QuantidadeInvalida()
-        nome_produto = normalizar_nome(args[1])
-
-        self.loja.adiciona_produto_carrinho(nome_produto, quantidade)
+        nome_produto = normalizar_nome(args[0])
+        id_cliente = int(args[2])
+        self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
         return [OpCodes.ADICIONA_PRODUTO_CARRINHO,[nome_produto]]
     
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
-        nome_produto = normalizar_nome(args[1])
-        self.loja.remover_produto_carrinho(nome_produto)
+        nome_produto = normalizar_nome(args[0])
+        id_cliente = args[1]
+        self.loja.remover_produto_carrinho(id_cliente, nome_produto)
         return [OpCodes.REMOVE_PRODUTO_CARRINHO, [nome_produto]]
     
     def _cmd_lista_carrinho(self, args):
-        self._validar_n_args(args, 0)
-
-        return self.loja.lista_carrinho_cliente()
+        self._validar_n_args(args, 1)
+        id_cliente = args[0]
+        return self.loja.lista_carrinho_cliente(id_cliente = args[0])
 
     def _cmd_checkout_carrinho(self, args):
-        self._validar_n_args(args, 0)
-        encomenda = self.loja.checkout_carrinho()
-        return [OpCodes.CHECKOUT_CARRINHO, [encomenda.id]]
+        self._validar_n_args(args, 1)
+        id_cliente = args[0]
+        encomenda_id = self.loja.checkout_carrinho(id_cliente)
+        return [OpCodes.CHECKOUT_CARRINHO, [encomenda_id]]
     
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)

@@ -4,7 +4,7 @@
 # Descrição: Camada de transporte TCP do cliente - conecta ao servidor e move strings
 
 import socket
-from shared.socket_utilities import PontoAcesso
+from shared.socket_utilities import PontoAcesso, receive_all
 from shared import excepcoes_shared
 import struct
 
@@ -34,7 +34,7 @@ class TCPSocketCliente:
             size_bytes = self.socket_cliente.recv(4)
             size = struct.unpack('i', size_bytes)[0]
         except: # acabar aqui
-        msg_bytes = PontoAcesso.receive_all(self.socket_cliente, size)
+        msg_bytes = receive_all(self.socket_cliente, size)
         return msg_bytes
         
 
