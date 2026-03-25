@@ -108,11 +108,13 @@ class Processador:
             self._validar_permissao(perfil, utilizador)
             handler = self._obter_handler(opcode)
 
-            # o handler das ações de gestão de carrinho precisam do id_utilizador
+            # os handlers das ações de gestão de carrinho precisam do id_utilizador
+            # o cria_cliente também
             if opcode in  {OpCodes.ADICIONA_PRODUTO_CARRINHO, 
                            OpCodes.REMOVE_PRODUTO_CARRINHO, 
                            OpCodes.CHECKOUT_CARRINHO, 
-                           OpCodes.LISTA_CARRINHO}:
+                           OpCodes.LISTA_CARRINHO, 
+                           OpCodes.CRIA_CLIENTE}:
                 args.append(utilizador)
         
             resultado = handler(args)
@@ -134,17 +136,18 @@ class Processador:
                                                    OpCodes.CATEGORIA_NAO_EXISTE)
         
         categoria = self.loja.criar_categoria(nome_categoria)
-        return [OpCodes.CRIA_CATEGORIA, [categoria.nome]]
+        return [OpCodes.OK_CRIA_CATEGORIA, [categoria.nome]]
     
     def _cmd_lista_categorias(self, args):        
         self._validar_n_args(args, 0)
-        return self.loja.lista_categorias()
+        categorias, produtos = self.loja.lista_categorias()
+        return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_remove_categoria(self, args):
         self._validar_n_args(args, 1)
-        nome_categoria = args[0]
-        nome_categoria_removida = self.loja.remover_categoria(nome_categoria)
-        return [OpCodes.REMOVE_CATEGORIA, nome_categoria_removida]
+        nome_categoria = normalizar_nome(args[0])
+        self.loja.remover_categoria(nome_categoria)
+        return [OpCodes.OK_REMOVE_CATEGORIA, []]
 
     def _cmd_cria_produto(self, args):
         self._validar_n_args(args, 4)
@@ -153,18 +156,19 @@ class Processador:
         try:
             preco = round(float(args[2]), 2)
         except ValueError:
-            raise ExcepcaoComandoInvalido("Preço inválido.")
+            raise shared.excepcoes_shared.TipoArgumentoInvalido()
         try:
             quantidade = int(args[3])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Quantidade inválida.")
+            raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
-        produto = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
-        return [OpCodes.CRIA_PRODUTO, [produto.nome]]
+        produto_nome = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
+        return [OpCodes.OK_CRIA_PRODUTO, [produto_nome]]
     
     def _cmd_lista_produtos(self, args):
         self._validar_n_args(args, 0)
-        return self.loja.listar_produtos()
+        categorias, produtos = self.loja.listar_produtos()
+        return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_aumenta_stock_produto(self, args):
         self._validar_n_args(args, 2)
@@ -172,10 +176,10 @@ class Processador:
         try:
             quantidade_delta = int(args[1])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Quantidade inválida.")
+            raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
         self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
-        return [OpCodes.AUMENTA_STOCK, [nome_produto]]
+        return [OpCodes.OK_AUMENTA_STOCK, [nome_produto]]
 
     def _cmd_atualiza_preco_produto(self, args):
         self._validar_n_args(args, 2)
@@ -183,22 +187,25 @@ class Processador:
         try:
             novo_preco = float(args[1])
         except ValueError:
-            raise ExcepcaoComandoInvalido("Preço inválido.")
+            raise shared.excepcoes_shared.PrecoInvalido()
         self.loja.atualizar_preco_produto(nome_produto, novo_preco)
-        return [OpCodes.ATUALIZA_PRECO, [nome_produto]]
+        return [OpCodes.OK_ATUALIZA_PRECO, [nome_produto]]
 
     def _cmd_cria_cliente(self, args):
-        self._validar_n_args(args, 3)
+        self._validar_n_args(args, 4)
         nome = normalizar_nome(args[0])
         email = args[1]
         pw = args[2]
+        id_cliente = args[3]
+        if '@' not in email:
+            raise shared.excepcoes_shared.EmailInvalido()
 
-        cliente = self.loja.criar_cliente(nome, email, pw)
-        return [OpCodes.CRIA_CLIENTE, [cliente.nome]] 
+        self.loja.criar_cliente(nome, email, pw, id_cliente)
+        return [OpCodes.OK_CRIA_CLIENTE, [nome]] 
     
     def _cmd_lista_clientes(self, args):
         self._validar_n_args(args, 0)
-        return self.loja.listar_clientes()
+        return [OpCodes.OK_LISTA_CLIENTES, self.loja.listar_clientes()]
 
     def _cmd_adiciona_produto_carrinho(self, args):
         self._validar_n_args(args, 3)
@@ -209,31 +216,32 @@ class Processador:
         nome_produto = normalizar_nome(args[0])
         id_cliente = int(args[2])
         self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
-        return [OpCodes.ADICIONA_PRODUTO_CARRINHO,[nome_produto]]
+        return [OpCodes.OK_ADICIONA_CARRINHO,[nome_produto]]
     
     def _cmd_remove_produto_carrinho(self, args):
         self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         id_cliente = args[1]
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
-        return [OpCodes.REMOVE_PRODUTO_CARRINHO, [nome_produto]]
+        return [OpCodes.OK_REMOVE_CARRINHO, [nome_produto]]
     
     def _cmd_lista_carrinho(self, args):
         self._validar_n_args(args, 1)
         id_cliente = args[0]
-        return self.loja.lista_carrinho_cliente(id_cliente = args[0])
+        categorias, produtos = self.loja.lista_carrinho_cliente(id_cliente)
+        return [OpCodes.OK_LISTA_CARRINHO, categorias, produtos]
 
     def _cmd_checkout_carrinho(self, args):
         self._validar_n_args(args, 1)
         id_cliente = args[0]
         encomenda_id = self.loja.checkout_carrinho(id_cliente)
-        return [OpCodes.CHECKOUT_CARRINHO, [encomenda_id]]
+        return [OpCodes.OK_CHECKOUT, [encomenda_id]]
     
     def _cmd_lista_encomendas(self, args):
         self._validar_n_args(args, 1)
-        try:
-            id_cliente = int(args[0])
-        except ValueError:
-            raise shared.excepcoes_shared.ClienteNaoExiste()
-
-        return self.loja.lista_encomendas(id_cliente)
+        id_cliente = int(args[0])
+        encomendas, produtos_por_encomenda = self.loja.lista_encomendas(id_cliente)
+        ans = [OpCodes.OK_LISTA_ENCOMENDAS, encomendas]
+        for p in produtos_por_encomenda:
+            ans.append(p)
+        return ans

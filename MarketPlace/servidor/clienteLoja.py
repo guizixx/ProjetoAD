@@ -7,13 +7,13 @@
 
 class ClienteLoja:
 
-    def __init__(self, nome, email, pw, permissao, id):
+    def __init__(self, nome, email, pw, id):
         self.id = id
         self.nome = nome
         self.email = email
         self.pw = pw
         self.carrinho_compras = {}  # { id_produto : quantidade }
-        self.permissao = permissao
+        self.permissao = 1
 
     def obter_id(self):
         return self.id
