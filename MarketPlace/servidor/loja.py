@@ -236,11 +236,8 @@ class Loja:
     #-----------------
     # AUXILIARES
     #-----------------
-    def validar_utilizador(self, perfil, utilizador):
-        if (perfil != 0) & (utilizador not in self._clientes.keys()):
+    def validar_utilizador(self, perfil, utilizador, operacao):
+        if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE) & (utilizador not in self._clientes.keys()):
             raise excepcoes_shared.UtilizadorInvalido()
-        
-        if perfil != self.clientes[utilizador].permissao:
-            raise excepcoes_shared.OperacaoNaoAutorizada()
         
         # de certeza que vao faltar casos a adicionar aqui para poder validar o utilizador em todas as situaçoes

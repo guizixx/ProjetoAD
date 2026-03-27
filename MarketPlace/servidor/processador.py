@@ -82,7 +82,7 @@ class Processador:
             raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
 
         return op_code, argumentos, perfil, utilizador
-          
+    
     def _validar_n_args(self, args, n):
         if len(args) != n:
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
@@ -106,6 +106,7 @@ class Processador:
         try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
             self._validar_permissao(perfil, utilizador)
+            self._validar_utilizador(perfil, utilizador, opcode)
             handler = self._obter_handler(opcode)
 
             # os handlers das ações de gestão de carrinho precisam do id_utilizador
