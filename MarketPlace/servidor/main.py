@@ -20,10 +20,8 @@ def main():
 
     try:
         ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = sys.argv[1])  
-        processador = Processador()
-        skeleton = Skeleton(ponto_acesso)
-        sock_escuta = skeleton.rede.socket_servidor
-
+        processador = Processador(ponto_acesso)
+        sock_escuta = processador.obter_skeleton().obter_rede().socket_servidor
         print("SERVIDOR> Configuracao do servidor válida. ")
 
     except ExcepcaoConfiguracaoInvalida as e:
@@ -50,23 +48,18 @@ def main():
                     print(f"SERVIDOR> Cliente {sckt.fileno()} fechou ligação")
             
             else: # Se for a socket de um cliente...
-                msg = sckt.recv(1024)
+                msg = processador.recebe()
                 if msg: # Se recebeu dados
                     try:
-                        if msg.decode().upper() in ("EXIT","QUIT"):
+                        if msg.upper() in ("EXIT","QUIT"):
                             sckt.close()
                             lista_sockets.remove(sckt)
                             print('SERVIDOR> Cliente fechou ligação')
                             exit(0)
                             break 
 
-                        # adicionar outras excecoes
-                        # ver se o codigo faz sentido assim
+                        processador.processar_comando(msg)  
 
-                        skeleton.accept()
-                        processador.processar_comando(skeleton.recebe())
-                        skeleton.close()
-                        
                     except OSError as e:
                         print(f"SERVIDOR> Erro na comunicação com o cliente: {e}")
                     

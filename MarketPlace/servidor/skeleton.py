@@ -2,15 +2,26 @@ from servidor.rede import TCPSocketServidor
 import pickle, struct
 from shared.socket_utilities import PontoAcesso
 from shared import excepcoes_shared
+from servidor.loja import Loja
 
 class Skeleton:
 
     def __init__(self, pontoAcesso):
         self.rede = TCPSocketServidor(pontoAcesso)
+        self.loja = Loja()
+
+    def reset(self): 
+        self.obter_loja().reset()
+
+    def obter_loja(self):
+        return self.loja
+    
+    def obter_rede(self):
+        return self.rede
 
     def accept(self): 
-        self.rede.accept()
-        print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.rede.ponto_acesso.endereco_ip, self.rede.ponto_acesso.port))
+        self.obter_rede().accept()
+        print("SERVIDOR> Servidor ligado a %s no porto %s" % (self.obter_rede().ponto_acesso.endereco_ip, self.obter_rede().ponto_acesso.port))
 
     def envia(self, msg_str): 
         try:
@@ -19,13 +30,13 @@ class Skeleton:
         except excepcoes_shared.ExcecaoSerializacaoInvalida as e:
             raise e
         try:
-            self.rede.envia(size, bytes)
+            self.obter_rede().envia(size, bytes)
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
         print("Estou a enviar", msg_str)
 
     def recebe(self): 
-        msg_bytes = self.rede.recebe()
+        msg_bytes = self.obter_rede().recebe()
         try:
             msg = pickle.loads(msg_bytes)
         except excepcoes_shared.ExcecaoDesserializacaoInvalida as e:
@@ -34,7 +45,7 @@ class Skeleton:
         return msg
 
     def close(self): 
-        self.rede.close()
+        self.obter_rede().close()
 
     def closeall(self): 
-        self.rede.closeall()
+        self.obter_rede().closeall()

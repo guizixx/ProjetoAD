@@ -10,6 +10,7 @@ from servidor.excepcoes import ExcepcaoComandoNumeroArgumentosIncorreto
 from servidor.excepcoes import ExcepcaoSupermercado
 from servidor.excepcoes import ExcepcaoComandoNaoInterpretavel
 from servidor.excepcoes import ExcepcaoComandoVazio
+from servidor.skeleton import Skeleton
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
 import shlex
@@ -34,11 +35,8 @@ class Processador:
       "NOK; <mensagem>"
     """
 
-    def reset(self): 
-        self.loja.reset()
-
-    def __init__(self):
-        self.loja = Loja()
+    def __init__(self, pontoAcesso):
+        self.skeleton = Skeleton(pontoAcesso)
                         # opcode:  [ handler, permissão mínima para poder executar a operação, numero_args a serem passados ]
         self.HANDLERS = {
             OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3, 1],
@@ -57,6 +55,15 @@ class Processador:
             OpCodes.LISTA_ENCOMENDAS: [self._cmd_lista_encomendas, 1, 1]
         }
 
+    def obter_skeleton(self):
+        return self.skeleton
+ 
+    def recebe(self):
+        self.obter_skeleton().recebe()
+
+    def envia(self, msg_str):
+        self.obter_skeleton().envia(msg_str)
+
     def _dividir_comando(self, comando): 
         pass
     ## VERIFICAR OPCODES CORRETOS
@@ -72,7 +79,7 @@ class Processador:
             raise shared.excepcoes_shared.OperacaoNaoAutorizada()
         
     def _validar_utilizador(self, perfil, utilizador, operacao):
-        return self.loja.validar_utilizador(perfil, utilizador, operacao)
+        return self.obter_skeleton().obter_loja().validar_utilizador(perfil, utilizador, operacao)
 
             
     def _obter_handler(self, opcode):
@@ -99,13 +106,13 @@ class Processador:
                            OpCodes.CRIA_CLIENTE}:
                 args.append(utilizador)
         
-            resultado = handler(args)
+            resultado = self.obter_skeleton().obter_loja().handler(args)
+            self.envia(resultado)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
        
         return resultado
             
-
     #------------------------
     # _cmd_ handlers
     #------------------------
@@ -116,16 +123,16 @@ class Processador:
             raise shared.excepcoes_shared.ExcepcaoNegocio("Nome da categoria vazio após normalização.", 
                                                    OpCodes.CATEGORIA_NAO_EXISTE)
         
-        categoria = self.loja.criar_categoria(nome_categoria)
+        categoria = self.obter_skeleton().obter_loja().criar_categoria(nome_categoria)
         return [OpCodes.OK_CRIA_CATEGORIA, [categoria.nome]]
     
     def _cmd_lista_categorias(self):        
-        categorias, produtos = self.loja.lista_categorias()
+        categorias, produtos = self.obter_skeleton().obter_loja().lista_categorias()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_remove_categoria(self, args):
         nome_categoria = normalizar_nome(args[0])
-        self.loja.remover_categoria(nome_categoria)
+        self.obter_skeleton().obter_loja().remover_categoria(nome_categoria)
         return [OpCodes.OK_REMOVE_CATEGORIA, []]
 
     def _cmd_cria_produto(self, args):
@@ -140,11 +147,11 @@ class Processador:
         except ValueError:
             raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
-        produto_nome = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
+        produto_nome = self.obter_skeleton().obter_loja().criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return [OpCodes.OK_CRIA_PRODUTO, [produto_nome]]
     
     def _cmd_lista_produtos(self):
-        categorias, produtos = self.loja.listar_produtos()
+        categorias, produtos = self.obter_skeleton().obter_loja().listar_produtos()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_aumenta_stock_produto(self, args):
@@ -154,7 +161,7 @@ class Processador:
         except ValueError:
             raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
-        self.loja.aumentar_stock_produto(nome_produto, quantidade_delta)
+        self.obter_skeleton().obter_loja().aumentar_stock_produto(nome_produto, quantidade_delta)
         return [OpCodes.OK_AUMENTA_STOCK, [nome_produto]]
 
     def _cmd_atualiza_preco_produto(self, args):
@@ -163,7 +170,7 @@ class Processador:
             novo_preco = float(args[1])
         except ValueError:
             raise shared.excepcoes_shared.PrecoInvalido()
-        self.loja.atualizar_preco_produto(nome_produto, novo_preco)
+        self.obter_skeleton().obter_loja().atualizar_preco_produto(nome_produto, novo_preco)
         return [OpCodes.OK_ATUALIZA_PRECO, [nome_produto]]
 
     def _cmd_cria_cliente(self, args):
@@ -174,11 +181,11 @@ class Processador:
         if '@' not in email:
             raise shared.excepcoes_shared.EmailInvalido()
 
-        self.loja.criar_cliente(nome, email, pw, id_cliente)
+        self.obter_skeleton().obter_loja().criar_cliente(nome, email, pw, id_cliente)
         return [OpCodes.OK_CRIA_CLIENTE, [nome]] 
     
     def _cmd_lista_clientes(self):
-        return [OpCodes.OK_LISTA_CLIENTES, self.loja.listar_clientes()]
+        return [OpCodes.OK_LISTA_CLIENTES, self.obter_skeleton().obter_loja().listar_clientes()]
 
     def _cmd_adiciona_produto_carrinho(self, args):
         try:
@@ -187,28 +194,28 @@ class Processador:
             raise shared.excepcoes_shared.QuantidadeInvalida()
         nome_produto = normalizar_nome(args[0])
         id_cliente = int(args[2])
-        self.loja.adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
+        self.obter_skeleton().obter_loja().adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
         return [OpCodes.OK_ADICIONA_CARRINHO,[nome_produto]]
     
     def _cmd_remove_produto_carrinho(self, args):
         nome_produto = normalizar_nome(args[0])
         id_cliente = args[1]
-        self.loja.remover_produto_carrinho(id_cliente, nome_produto)
+        self.obter_skeleton().obter_loja().remover_produto_carrinho(id_cliente, nome_produto)
         return [OpCodes.OK_REMOVE_CARRINHO, [nome_produto]]
     
     def _cmd_lista_carrinho(self, args):
         id_cliente = args[0]
-        categorias, produtos = self.loja.lista_carrinho_cliente(id_cliente)
+        categorias, produtos = self.obter_skeleton().obter_loja().lista_carrinho_cliente(id_cliente)
         return [OpCodes.OK_LISTA_CARRINHO, categorias, produtos]
 
     def _cmd_checkout_carrinho(self, args):
         id_cliente = args[0]
-        encomenda_id = self.loja.checkout_carrinho(id_cliente)
+        encomenda_id = self.obter_skeleton().obter_loja().checkout_carrinho(id_cliente)
         return [OpCodes.OK_CHECKOUT, [encomenda_id]]
     
     def _cmd_lista_encomendas(self, args):
         id_cliente = int(args[0])
-        encomendas, produtos_por_encomenda = self.loja.lista_encomendas(id_cliente)
+        encomendas, produtos_por_encomenda = self.obter_skeleton().obter_loja().lista_encomendas(id_cliente)
         ans = [OpCodes.OK_LISTA_ENCOMENDAS, encomendas]
         for p in produtos_por_encomenda:
             ans.append(p)
