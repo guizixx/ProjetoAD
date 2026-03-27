@@ -1,4 +1,4 @@
-from rede import TCPSocketCliente
+from cliente.rede import TCPSocketCliente
 from shared import excepcoes_shared
 import pickle, struct
 from shared.excepcoes_shared import OpCodes
@@ -46,47 +46,47 @@ class Stub:
 
 ### Categoria
     def cria_categoria(self, nome_categoria, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.CRIA_CATEGORIA, [nome_categoria], perfil, id_utilizador)
+        return self.processa(OpCodes.CRIA_CATEGORIA, [nome_categoria], perfil, id_utilizador)
  
     def lista_categorias(self, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.LISTA_CATEGORIAS, [], perfil, id_utilizador)
+        return self.processa(OpCodes.LISTA_CATEGORIAS, [], perfil, id_utilizador)
  
     def remove_categoria(self, nome_categoria, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.REMOVE_CATEGORIA, [nome_categoria], perfil, id_utilizador)
+        return self.processa(OpCodes.REMOVE_CATEGORIA, [nome_categoria], perfil, id_utilizador)
     
 ### Produto
     def cria_produto(self, nome, categoria, preco, quantidade, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.CRIA_PRODUTO, [nome, categoria, preco, quantidade], perfil, id_utilizador)
+        return self.processa(OpCodes.CRIA_PRODUTO, [nome, categoria, preco, quantidade], perfil, id_utilizador)
  
     def lista_produtos(self, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.LISTA_PRODUTOS, [], perfil, id_utilizador)
+        return self.processa(OpCodes.LISTA_PRODUTOS, [], perfil, id_utilizador)
  
     def aumenta_stock(self, nome_produto, delta, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.AUMENTA_STOCK, [nome_produto, delta], perfil, id_utilizador)
+        return self.processa(OpCodes.AUMENTA_STOCK, [nome_produto, delta], perfil, id_utilizador)
  
     def atualiza_preco(self, nome_produto, novo_preco, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.ATUALIZA_PRECO, [nome_produto, novo_preco], perfil, id_utilizador)
+        return self.processa(OpCodes.ATUALIZA_PRECO, [nome_produto, novo_preco], perfil, id_utilizador)
     
 ### Clientes
     def cria_cliente(self, nome, email, password, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.CRIA_CLIENTE, [nome, email, password], perfil, id_utilizador)
+        return self.processa(OpCodes.CRIA_CLIENTE, [nome, email, password], perfil, id_utilizador)
  
     def lista_clientes(self, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.LISTA_CLIENTES, [], perfil, id_utilizador)
+        return self.processa(OpCodes.LISTA_CLIENTES, [], perfil, id_utilizador)
     
 ### Carrinho
     def adiciona_produto_carrinho(self, nome_produto, quantidade, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.ADICIONA_PRODUTO_CARRINHO, [nome_produto, quantidade], perfil, id_utilizador)
+        return self.processa(OpCodes.ADICIONA_PRODUTO_CARRINHO, [nome_produto, quantidade], perfil, id_utilizador)
  
     def remove_produto_carrinho(self, nome_produto, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.REMOVE_PRODUTO_CARRINHO, [nome_produto], perfil, id_utilizador)
+        return self.processa(OpCodes.REMOVE_PRODUTO_CARRINHO, [nome_produto], perfil, id_utilizador)
  
     def lista_carrinho(self, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.LISTA_CARRINHO, [], perfil, id_utilizador)
+        return self.processa(OpCodes.LISTA_CARRINHO, [], perfil, id_utilizador)
  
     def checkout_carrinho(self, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.CHECKOUT_CARRINHO, [], perfil, id_utilizador)
+        return self.processa(OpCodes.CHECKOUT_CARRINHO, [], perfil, id_utilizador)
 
 ### Encomendas
     def lista_encomendas(self, id_cliente, perfil, id_utilizador):
-        return self._fazer_pedido(OpCodes.LISTA_ENCOMENDAS, [id_cliente], perfil, id_utilizador)
+        return self.processa(OpCodes.LISTA_ENCOMENDAS, [id_cliente], perfil, id_utilizador)

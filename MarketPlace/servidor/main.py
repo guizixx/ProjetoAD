@@ -10,7 +10,7 @@ from sys import stdin
 from servidor.processador import Processador
 from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida
 from shared.socket_utilities import PontoAcesso
-from skeleton import Skeleton
+from servidor.skeleton import Skeleton
 
 def main():
 
@@ -20,9 +20,9 @@ def main():
 
     try:
         ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = sys.argv[1])  
-        processador = Processador(ponto_acesso)
-        sock_escuta = processador.rede.socket_servidor
-        skeleton = Skeleton(sock_escuta)
+        processador = Processador()
+        skeleton = Skeleton(ponto_acesso)
+        sock_escuta = skeleton.rede.socket_servidor
 
         print("SERVIDOR> Configuracao do servidor válida. ")
 

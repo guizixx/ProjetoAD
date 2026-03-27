@@ -76,8 +76,8 @@ def main():
             if not comando.strip():
                 continue
 
-            cliente.enviar_comando(comando)
-            resposta = cliente.receber_resposta()
+            cliente.envia(comando)
+            resposta = cliente.recebe()
             print(f"SERVIDOR> {resposta}")
 
             if comando.strip().upper() == "EXIT":
