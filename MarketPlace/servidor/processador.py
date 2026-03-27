@@ -58,30 +58,10 @@ class Processador:
         }
 
     def _dividir_comando(self, comando): 
-        if type(comando) != list:
-            raise ExcepcaoComandoNaoInterpretavel(comando)
-        
-        if len(comando) == 0:
-            raise ExcepcaoComandoVazio()
-        elif len(comando) != 4:
-            raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
-        
-        try:
-            op_code = int(comando[0])
-            perfil = int(comando[2])
-            utilizador = int(comando[3])
-        except shared.excepcoes_shared.TipoArgumentoInvalido as e:
-            raise e
-        if int(op_code) not in self.HANDLERS.keys():
-            raise shared.excepcoes_shared.ComandoDesconhecido()
-        if perfil not in [0, 1, 2, 3]:
-            raise shared.excepcoes_shared.PerfilInvalido()
-        
-        argumentos = comando[1]
-        if type(argumentos) != list:
-            raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
-
-        return op_code, argumentos, perfil, utilizador
+        pass
+    ## VERIFICAR OPCODES CORRETOS
+    #       IF IN SELF.HANDLERS.KEYS
+    # !!!!!!!!!!!!!!!!!!!1
     
     def _validar_n_args(self, args, n):
         if len(args) != n:
