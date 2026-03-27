@@ -39,22 +39,22 @@ class Processador:
 
     def __init__(self):
         self.loja = Loja()
-                        # opcode:  [ handler, permissão mínima para poder executar a operação ]
+                        # opcode:  [ handler, permissão mínima para poder executar a operação, numero_args a serem passados ]
         self.HANDLERS = {
-            OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3],
-            OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 3],
-            OpCodes.REMOVE_CATEGORIA: [self._cmd_remove_categoria, 3],
-            OpCodes.CRIA_PRODUTO: [self._cmd_cria_produto, 2],
-            OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 2],
-            OpCodes.AUMENTA_STOCK: [self._cmd_aumenta_stock_produto, 2],
-            OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2],
-            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0], 
-            OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2],
-            OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1],
-            OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1],
-            OpCodes.LISTA_CARRINHO: [self._cmd_lista_carrinho, 1],
-            OpCodes.CHECKOUT_CARRINHO: [self._cmd_checkout_carrinho, 1],
-            OpCodes.LISTA_ENCOMENDAS: [self._cmd_lista_encomendas, 1]
+            OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3, 1],
+            OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 3, 0],
+            OpCodes.REMOVE_CATEGORIA: [self._cmd_remove_categoria, 3, 1],
+            OpCodes.CRIA_PRODUTO: [self._cmd_cria_produto, 2, 4],
+            OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 0],
+            OpCodes.AUMENTA_STOCK: [self._cmd_aumenta_stock_produto, 2, 2],
+            OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2, 2],
+            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0, 3], 
+            OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2, 0],
+            OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1, 2],
+            OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1, 1],
+            OpCodes.LISTA_CARRINHO: [self._cmd_lista_carrinho, 1, 0],
+            OpCodes.CHECKOUT_CARRINHO: [self._cmd_checkout_carrinho, 1, 0],
+            OpCodes.LISTA_ENCOMENDAS: [self._cmd_lista_encomendas, 1, 1]
         }
 
     def _dividir_comando(self, comando): 
@@ -107,6 +107,7 @@ class Processador:
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
             self._validar_permissao(perfil, utilizador)
             self._validar_utilizador(perfil, utilizador, opcode)
+            self._validar_n_args(args, self.HANDLERS.get(opcode)[2])
             handler = self._obter_handler(opcode)
 
             # os handlers das ações de gestão de carrinho precisam do id_utilizador
@@ -130,7 +131,6 @@ class Processador:
     #------------------------
 
     def _cmd_cria_categoria(self, args):
-        self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])
         if nome_categoria in ['', []]:
             raise shared.excepcoes_shared.ExcepcaoNegocio("Nome da categoria vazio após normalização.", 
@@ -139,19 +139,16 @@ class Processador:
         categoria = self.loja.criar_categoria(nome_categoria)
         return [OpCodes.OK_CRIA_CATEGORIA, [categoria.nome]]
     
-    def _cmd_lista_categorias(self, args):        
-        self._validar_n_args(args, 0)
+    def _cmd_lista_categorias(self):        
         categorias, produtos = self.loja.lista_categorias()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_remove_categoria(self, args):
-        self._validar_n_args(args, 1)
         nome_categoria = normalizar_nome(args[0])
         self.loja.remover_categoria(nome_categoria)
         return [OpCodes.OK_REMOVE_CATEGORIA, []]
 
     def _cmd_cria_produto(self, args):
-        self._validar_n_args(args, 4)
         nome_produto = normalizar_nome(args[0])
         nome_categoria = normalizar_nome(args[1])
         try:
@@ -166,13 +163,11 @@ class Processador:
         produto_nome = self.loja.criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return [OpCodes.OK_CRIA_PRODUTO, [produto_nome]]
     
-    def _cmd_lista_produtos(self, args):
-        self._validar_n_args(args, 0)
+    def _cmd_lista_produtos(self):
         categorias, produtos = self.loja.listar_produtos()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
     def _cmd_aumenta_stock_produto(self, args):
-        self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         try:
             quantidade_delta = int(args[1])
@@ -183,7 +178,6 @@ class Processador:
         return [OpCodes.OK_AUMENTA_STOCK, [nome_produto]]
 
     def _cmd_atualiza_preco_produto(self, args):
-        self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         try:
             novo_preco = float(args[1])
@@ -193,7 +187,6 @@ class Processador:
         return [OpCodes.OK_ATUALIZA_PRECO, [nome_produto]]
 
     def _cmd_cria_cliente(self, args):
-        self._validar_n_args(args, 4)
         nome = normalizar_nome(args[0])
         email = args[1]
         pw = args[2]
@@ -204,12 +197,10 @@ class Processador:
         self.loja.criar_cliente(nome, email, pw, id_cliente)
         return [OpCodes.OK_CRIA_CLIENTE, [nome]] 
     
-    def _cmd_lista_clientes(self, args):
-        self._validar_n_args(args, 0)
+    def _cmd_lista_clientes(self):
         return [OpCodes.OK_LISTA_CLIENTES, self.loja.listar_clientes()]
 
     def _cmd_adiciona_produto_carrinho(self, args):
-        self._validar_n_args(args, 3)
         try:
             quantidade = int(args[1])
         except ValueError:
@@ -220,26 +211,22 @@ class Processador:
         return [OpCodes.OK_ADICIONA_CARRINHO,[nome_produto]]
     
     def _cmd_remove_produto_carrinho(self, args):
-        self._validar_n_args(args, 2)
         nome_produto = normalizar_nome(args[0])
         id_cliente = args[1]
         self.loja.remover_produto_carrinho(id_cliente, nome_produto)
         return [OpCodes.OK_REMOVE_CARRINHO, [nome_produto]]
     
     def _cmd_lista_carrinho(self, args):
-        self._validar_n_args(args, 1)
         id_cliente = args[0]
         categorias, produtos = self.loja.lista_carrinho_cliente(id_cliente)
         return [OpCodes.OK_LISTA_CARRINHO, categorias, produtos]
 
     def _cmd_checkout_carrinho(self, args):
-        self._validar_n_args(args, 1)
         id_cliente = args[0]
         encomenda_id = self.loja.checkout_carrinho(id_cliente)
         return [OpCodes.OK_CHECKOUT, [encomenda_id]]
     
     def _cmd_lista_encomendas(self, args):
-        self._validar_n_args(args, 1)
         id_cliente = int(args[0])
         encomendas, produtos_por_encomenda = self.loja.lista_encomendas(id_cliente)
         ans = [OpCodes.OK_LISTA_ENCOMENDAS, encomendas]
