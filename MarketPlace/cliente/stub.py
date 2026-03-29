@@ -1,7 +1,6 @@
 from cliente.rede import TCPSocketCliente
 from shared import excepcoes_shared
 import pickle, struct
-from shared.excepcoes_shared import OpCodes
 
 # copiado da pl3, adaptar o que for necessario
 class Stub:
