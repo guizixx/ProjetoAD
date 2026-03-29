@@ -5,10 +5,9 @@
 
 import sys
 import select as sel
-import time
-from sys import stdin
 from servidor.processador import Processador
-from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida
+from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida, ExcecaoLigacaoInterrompida
+import shared.excepcoes_shared
 from shared.socket_utilities import PontoAcesso
 from servidor.skeleton import Skeleton
 
@@ -30,6 +29,8 @@ def main():
 
     lista_sockets = [sock_escuta, sys.stdin]
 
+    print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
+
     while True:
         R, W, X = sel.select(lista_sockets, [], []) # Espera sockets
 
@@ -48,26 +49,52 @@ def main():
                     print(f"SERVIDOR> Cliente {sckt.fileno()} fechou ligação")
             
             else: # Se for a socket de um cliente...
-                msg = processador.recebe()
-                if msg: # Se recebeu dados
-                    try:
-                        if msg.upper() in ("EXIT","QUIT"):
-                            sckt.close()
-                            lista_sockets.remove(sckt)
-                            print('SERVIDOR> Cliente fechou ligação')
-                            exit(0)
-                            break 
-
-                        processador.processar_comando(msg)  
-
-                    except OSError as e:
-                        print(f"SERVIDOR> Erro na comunicação com o cliente: {e}")
-                    
-                else: # Se não recebeu dados
-                    sckt.close() # cliente fechou ligação
+                try:
+                    pedido = processador.recebe(sckt)
+                except ExcecaoLigacaoInterrompida:
+                    print(f"SERVIDOR> Cliente {sckt.fileno()} fechou a ligação.")
+                    sckt.close()
                     lista_sockets.remove(sckt)
-                    print('Cliente fechou ligação')
-    sock_escuta.close()
+                    continue
+                except shared.excepcoes_shared.ExcecaoDesserializacaoInvalida:
+                    processador.envia(sckt, [shared.excepcoes_shared.OpCodes.DESSERIALIZACAO_INVALIDA, []])
+                    continue
+
+                try:
+                    resposta = processador.processar_comando(pedido)
+                except shared.excepcoes_shared.OperacaoNaoAutorizada:
+                    resposta = [shared.excepcoes_shared.OpCodes.OPERACAO_NAO_AUTORIZADA, []]
+                except shared.excepcoes_shared.UtilizadorInvalido:
+                    resposta = [shared.excepcoes_shared.OpCodes.ID_UTILIZADOR_INVALIDO, []]
+                except shared.excepcoes_shared.PerfilInvalido:
+                    resposta = [shared.excepcoes_shared.OpCodes.PERFIL_INVALIDO, []]
+                except shared.excepcoes_shared.ExcecaoNumeroCamposInvalido:
+                    resposta = [shared.excepcoes_shared.OpCodes.NUMERO_CAMPOS_INVALIDO, []]
+                except shared.excepcoes_shared.ExcecaoArgumentoInvalido:
+                    resposta = [shared.excepcoes_shared.OpCodes.ARGUMENTOS_NAO_SAO_LISTA, []]
+                except shared.excepcoes_shared.ComandoDesconhecido:
+                    resposta = [shared.excepcoes_shared.OpCodes.OP_CODE_INVALIDO, []]
+                except (shared.excepcoes_shared.ExcepcaoNegocio,
+                        shared.excepcoes_shared.ExcepcaoValidacao) as e:
+                    resposta = [e.code, [str(e)]]
+                except Exception as e:
+                    resposta = [shared.excepcoes_shared.OpCodes.ERRO_INTERNO_SERVIDOR, [str(e)]]
+
+                try:
+                    print(f"SERVIDOR> Enviando resposta: {resposta}")
+                    processador.envia(sckt, resposta)
+                except ExcecaoLigacaoInterrompida:
+                    print(f"SERVIDOR> Cliente {sckt.fileno()} fechou a ligação ao enviar resposta.")
+                    sckt.close()
+                    lista_sockets.remove(sckt)
+                
+    for sckt in lista_sockets:
+        if sckt != sys.stdin:
+            try:
+                sock.close()
+            except Exception:
+                pass
+    print("SERVIDOR> Servidor encerrado.")
 
 if __name__ == "__main__":
     main()
