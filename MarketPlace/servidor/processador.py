@@ -58,14 +58,37 @@ class Processador:
     def obter_skeleton(self):
         return self.skeleton
  
-    def recebe(self):
-        self.obter_skeleton().recebe()
+    def recebe(self, conn_sock):
+        self.obter_skeleton().recebe(conn_sock)
 
-    def envia(self, msg_str):
-        self.obter_skeleton().envia(msg_str)
+    def envia(self, conn_sock, msg_str):
+        self.obter_skeleton().envia(conn_sock, msg_str)
 
     def _dividir_comando(self, comando): 
-        pass
+        if not isinstance(comando, list):
+            raise ExcepcaoComandoNaoInterpretavel(comando)
+        if len(comando) == 0:
+            raise ExcepcaoComandoVazio()
+        if len(comando) != 4:
+            raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
+ 
+        try:
+            op_code    = int(comando[0])
+            perfil     = int(comando[2])
+            utilizador = int(comando[3])
+        except (ValueError, TypeError):
+            raise shared.excepcoes_shared.TipoArgumentoInvalido("op_code/perfil/utilizador")
+ 
+        if op_code not in self.HANDLERS:
+            raise shared.excepcoes_shared.ComandoDesconhecido(op_code)
+        if perfil not in [0, 1, 2, 3]:
+            raise shared.excepcoes_shared.PerfilInvalido()
+ 
+        argumentos = comando[1]
+        if not isinstance(argumentos, list):
+            raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
+ 
+        return op_code, argumentos, perfil, utilizador
     ## VERIFICAR OPCODES CORRETOS
     #       IF IN SELF.HANDLERS.KEYS
     # !!!!!!!!!!!!!!!!!!!1
