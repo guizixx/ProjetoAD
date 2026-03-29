@@ -35,9 +35,8 @@ class TCPSocketServidor:
             dados += parte
         return dados
 
-    def envia(self, conn_sock, bytes): 
+    def envia(self, conn_sock, tamanho, bytes): 
         try:
-            tamanho = struct.pack('!I', len(bytes))
             conn_sock.sendall(tamanho)
             conn_sock.sendall(bytes)
         except OSError:
