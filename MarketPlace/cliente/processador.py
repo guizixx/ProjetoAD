@@ -37,7 +37,7 @@ class Processador:
         if not isinstance(opcode, int) or opcode not in OPCODES_VALIDOS:
             raise ValueError(f"Op_code inválido: {opcode}.")
         if not isinstance(lista_args, list):
-            raise ValueError("Ö segundo campo (argumentos) deve ser uma lista.")
+            raise ValueError("O segundo campo (argumentos) deve ser uma lista.")
         if not isinstance(perfil, int) or perfil not in [0, 1, 2, 3]:
             raise ValueError(f"Perfil inválido: {perfil}. Deve ser 0, 1, 2 ou 3.")
         if not isinstance(id_utilizador, int) or id_utilizador < 0:
@@ -47,9 +47,9 @@ class Processador:
         self.validar_pedido(pedido)
         self.stub.envia(pedido)
         resposta = self.stub.recebe()
-        nome = resposta[1][0].nome
-        print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Nome: {nome}")
-        return resposta
+        # nome = resposta[1][0].nome
+        # print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Nome: {nome}")
+        return self.formatar_resposta(resposta)
 
     def formatar_resposta(self, resposta):
         if resposta == "SERVIDOR_ENCERROU":
