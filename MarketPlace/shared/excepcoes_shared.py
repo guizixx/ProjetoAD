@@ -223,8 +223,8 @@ class ExcepcaoComunicacao(Exception):
 
 class ExcecaoLigacaoInterrompida(ExcepcaoComunicacao):
     def __init__(self):
-        super().__init__("Cliente/servidor fechou a ligação inesperadamente.", 
-                         OpCodes.LIGACAO_INTERROMPIDA)              
+        super().__init__("Cliente/servidor fechou a ligação inesperadamente." +
+                         str(OpCodes.LIGACAO_INTERROMPIDA))              
 
 
 
