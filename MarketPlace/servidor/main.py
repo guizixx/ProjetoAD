@@ -31,6 +31,11 @@ def main():
 
     print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
 
+    # adição de admins e funcionários fictícios
+    #      2 funcionários     2 admins
+    # ids: 1000000, 1000001 | 1000002, 1000003
+    processador.obter_skeleton().obter_loja().criar_funcionarios()
+
     running = True
     while running:
         # print("Lista de sockets ativos: ", lista_sockets)
