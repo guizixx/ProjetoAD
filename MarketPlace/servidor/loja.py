@@ -132,12 +132,13 @@ class Loja:
     #---------------
     # Clientes
     #---------------
-    def criar_cliente(self, nome, email, pw, id_cliente):
+    def criar_cliente(self, nome, email, pw, id_cliente, permissao):
         for c in self._clientes.values():
             if c.obter_email() == email.lower():
                 raise excepcoes_shared.EmailJaExiste()
-        cliente = ClienteLoja(nome, email, pw, id_cliente)
+        cliente = ClienteLoja(nome, email, pw, id_cliente, permissao)
         self._clientes[id_cliente] = cliente
+        return cliente
 
     def listar_clientes(self):
         if len(self._clientes.values()) == 0:
@@ -237,6 +238,7 @@ class Loja:
     # AUXILIARES
     #-----------------
     def validar_utilizador(self, perfil, utilizador, operacao):
+        # print("OPCODE dentro de validar_utilizador da loja: ", operacao)
         if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE) & (utilizador not in self._clientes.keys()):
             raise excepcoes_shared.UtilizadorInvalido()
         

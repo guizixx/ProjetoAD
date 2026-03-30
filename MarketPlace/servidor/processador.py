@@ -46,7 +46,7 @@ class Processador:
             OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 0],
             OpCodes.AUMENTA_STOCK: [self._cmd_aumenta_stock_produto, 2, 2],
             OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2, 2],
-            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0, 3], 
+            OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0, 5], 
             OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2, 0],
             OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1, 2],
             OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1, 1],
@@ -59,13 +59,14 @@ class Processador:
         return self.skeleton
  
     def recebe(self, conn_sock):
-        self.obter_skeleton().recebe(conn_sock)
+        return self.obter_skeleton().recebe(conn_sock)
 
     def envia(self, conn_sock, msg_str):
         self.obter_skeleton().envia(conn_sock, msg_str)
 
     def _dividir_comando(self, comando): 
         if not isinstance(comando, list):
+            print(f"SERVIDOR> Comando recebido não é uma lista: {comando}")
             raise ExcepcaoComandoNaoInterpretavel(comando)
         if len(comando) == 0:
             raise ExcepcaoComandoVazio()
@@ -73,9 +74,12 @@ class Processador:
             raise shared.excepcoes_shared.ExcecaoNumeroCamposInvalido()
  
         try:
-            op_code    = int(comando[0])
-            perfil     = int(comando[2])
+            op_code = int(comando[0])
+            print(f"SERVIDOR> Op_code recebido: {op_code}")
+            perfil = int(comando[2])
+            print(f"SERVIDOR> Perfil recebido: {perfil}")
             utilizador = int(comando[3])
+            print(f"SERVIDOR> ID utilizador recebido: {utilizador}")
         except (ValueError, TypeError):
             raise shared.excepcoes_shared.TipoArgumentoInvalido("op_code/perfil/utilizador")
  
@@ -95,6 +99,7 @@ class Processador:
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
         
     def _validar_permissao(self, perfil, operacao):
+        # print("OPCODE dentro de validar_permissao do processador: ", operacao)
         if self.HANDLERS[operacao][1] > perfil:
             raise shared.excepcoes_shared.OperacaoNaoAutorizada()
         
@@ -104,17 +109,17 @@ class Processador:
             
     def _obter_handler(self, opcode):
         try:
-            comando = self.HANDLERS[opcode][0] 
+            comando = self.HANDLERS.get(opcode)[0]
         except KeyError:
             raise shared.excepcoes_shared.ErroInterno()
         return comando
     
-    def processar_comando(self, comando):
+    def processar_comando(self, sckt, comando):
         try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
-            self._validar_permissao(perfil, utilizador)
+            print(f"SERVIDOR> Comando dividido: opcode={opcode}, args={args}, perfil={perfil}, utilizador={utilizador}")
+            self._validar_permissao(perfil, opcode)
             self._validar_utilizador(perfil, utilizador, opcode)
-            self._validar_n_args(args, self.HANDLERS.get(opcode)[2])
             handler = self._obter_handler(opcode)
 
             # os handlers das ações de gestão de carrinho precisam do id_utilizador
@@ -122,12 +127,17 @@ class Processador:
             if opcode in  {OpCodes.ADICIONA_PRODUTO_CARRINHO, 
                            OpCodes.REMOVE_PRODUTO_CARRINHO, 
                            OpCodes.CHECKOUT_CARRINHO, 
-                           OpCodes.LISTA_CARRINHO, 
-                           OpCodes.CRIA_CLIENTE}:
+                           OpCodes.LISTA_CARRINHO}:
                 args.append(utilizador)
+            elif opcode == OpCodes.CRIA_CLIENTE:
+                args.append(utilizador)
+                args.append(perfil)
         
-            resultado = self.obter_skeleton().obter_loja().handler(args)
-            self.envia(resultado)
+            self._validar_n_args(args, self.HANDLERS.get(opcode)[2])
+
+            resultado = handler(args)
+            print(f"SERVIDOR> Resultado do comando: {resultado}")
+            self.envia(sckt, resultado)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
        
@@ -198,11 +208,12 @@ class Processador:
         email = args[1]
         pw = args[2]
         id_cliente = args[3]
+        permissao = args[4]
         if '@' not in email:
             raise shared.excepcoes_shared.EmailInvalido()
 
-        self.obter_skeleton().obter_loja().criar_cliente(nome, email, pw, id_cliente)
-        return [OpCodes.OK_CRIA_CLIENTE, [nome]] 
+        cliente = self.obter_skeleton().obter_loja().criar_cliente(nome, email, pw, id_cliente, permissao)
+        return [OpCodes.OK_CRIA_CLIENTE, [cliente]] 
     
     def _cmd_lista_clientes(self):
         return [OpCodes.OK_LISTA_CLIENTES, self.obter_skeleton().obter_loja().listar_clientes()]
