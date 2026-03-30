@@ -44,9 +44,8 @@ def main():
             elif sckt == sys.stdin: # Se for a entrada do stdin ...
                 command = sys.stdin.readline().strip()
                 if command.upper() in ("EXIT","QUIT"):
-                    sckt.close()
-                    lista_sockets.remove(sckt)
-                    print(f"SERVIDOR> Cliente {sckt.fileno()} fechou ligação")
+                    print("SERVIDOR> A encerrar...")
+                    break
             
             else: # Se for a socket de um cliente...
                 try:
