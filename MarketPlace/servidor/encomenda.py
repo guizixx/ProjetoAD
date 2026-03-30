@@ -7,25 +7,25 @@
 class Encomenda:
     _contador_global = 1
     def __init__(self, data, carrinho_compras, cliente_id, total):
-        self.id = Encomenda._contador_global
+        self.id_encomenda = Encomenda._contador_global
         self.data = data
-        self.carrinho_compras = carrinho_compras
-        self.cliente_id = cliente_id
-        self.total = total
+        self.produtos = carrinho_compras
+        self.id_cliente = cliente_id
+        self.total_preco = total
         Encomenda._contador_global += 1
 
     def obter_id(self):
-        return self.id
+        return self.id_encomenda
     
     def obter_data(self):
         return self.data
     
     def obter_carrinho_compras(self):
-        return self.carrinho_compras
+        return self.produtos
     
     def obter_cliente_id(self):
-        return self.cliente_id
+        return self.id_cliente
     
     def obter_total(self):
-        return self.total
+        return self.total_preco
 
