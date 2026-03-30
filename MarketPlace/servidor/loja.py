@@ -233,6 +233,8 @@ class Loja:
                 produtos_por_encomenda.append(produtos_encomenda)
 
         return encomendas_cliente, produtos_por_encomenda
+    
+
     #-----------------
     # AUXILIARES
     #-----------------
@@ -246,3 +248,9 @@ class Loja:
             raise excepcoes_shared.UtilizadorInvalido()
         
         # de certeza que vao faltar casos a adicionar aqui para poder validar o utilizador em todas as situaçoes
+
+    def criar_funcionarios(self):
+        f1 = ClienteLoja("f1", "f1@", "f1", 1000000, 2)
+        f2 = ClienteLoja("f2", "f2@", "f2", 1000001, 2)
+        a1 = ClienteLoja("a1", "a1@", "a1", 1000002, 3)
+        a2 = ClienteLoja("a2", "a2@", "a2", 1000003, 3)
