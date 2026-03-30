@@ -21,7 +21,7 @@ class Stub:
         try:
             bytes = pickle.dumps(pedido, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception:
-            raise excepcoes_shared.ExcecaoSerializacao("Erro ao serializar pedido.")
+            raise excepcoes_shared.ExcecaoSerializacaoInvalida("Erro ao serializar pedido.")
         try:
             self.obter_rede().envia(bytes)
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
@@ -36,6 +36,6 @@ class Stub:
         try:
             resposta = pickle.loads(bytes)
         except Exception:
-            raise excepcoes_shared.ExcecaoSerializacao("Erro ao desserializar resposta.")
+            raise excepcoes_shared.ExcecaoDesserializacaoInvalida("Erro ao desserializar resposta.")
         return resposta
 
