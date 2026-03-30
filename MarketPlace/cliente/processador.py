@@ -1,5 +1,6 @@
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
+from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
 
 OPCODES_VALIDOS = {
     OpCodes.CRIA_CATEGORIA,
@@ -46,10 +47,11 @@ class Processador:
         self.validar_pedido(pedido)
         self.stub.envia(pedido)
         resposta = self.stub.recebe()
-        return self.formatar_resposta(resposta)
-    
+        return resposta
 
     def formatar_resposta(self, resposta):
+        if resposta == "SERVIDOR_ENCERROU":
+            return resposta
         if not isinstance(resposta, list) or len(resposta) != 2:
             return f"Resposta inesperada: {resposta}"
         opcode = resposta[0]
@@ -108,7 +110,8 @@ class Processador:
  
         if opcode == OpCodes.OK_CRIA_CLIENTE:
             cliente = resposta[1][0]
-            return f"OK; Cliente criado com sucesso com identificador único {cliente.id_cliente}."
+            # print("Resposta do criar cliente: ", resposta[1][0])
+            return f"OK; Cliente criado com sucesso com identificador único {cliente.id}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
             clientes = resposta[1]
@@ -154,6 +157,9 @@ class Processador:
  
         if opcode == OpCodes.OK_LISTA_ENCOMENDAS:
             return self.formatar_lista_encomendas(resposta)
+        
+        if opcode == OpCodes.LIGACAO_INTERROMPIDA:
+            return 
  
         return f"OK; {resposta[1]}"
 
