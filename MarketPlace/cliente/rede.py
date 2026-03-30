@@ -21,7 +21,6 @@ class TCPSocketCliente:
         self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def ligar(self):
-        self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket_cliente.connect((self.ponto_acesso.endereco_ip, int(self.ponto_acesso.porto)))
         print(f"CLIENTE> Ligado ao servidor em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
