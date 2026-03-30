@@ -155,7 +155,10 @@ class Processador:
         categoria = self.obter_skeleton().obter_loja().criar_categoria(nome_categoria)
         return [OpCodes.OK_CRIA_CATEGORIA, [categoria]]
     
-    def _cmd_lista_categorias(self):        
+    def _cmd_lista_categorias(self, args):        
+        if len(args) != 0:
+            raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
+        
         categorias, produtos = self.obter_skeleton().obter_loja().lista_categorias()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
@@ -179,7 +182,10 @@ class Processador:
         produto = self.obter_skeleton().obter_loja().criar_produto(nome_produto, nome_categoria, preco, quantidade)    
         return [OpCodes.OK_CRIA_PRODUTO, [produto]]
     
-    def _cmd_lista_produtos(self):
+    def _cmd_lista_produtos(self, args):
+        if len(args) != 0:
+            raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
+        
         categorias, produtos = self.obter_skeleton().obter_loja().listar_produtos()
         return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
 
@@ -214,7 +220,9 @@ class Processador:
         cliente = self.obter_skeleton().obter_loja().criar_cliente(nome, email, pw, id_cliente, permissao)
         return [OpCodes.OK_CRIA_CLIENTE, [cliente]] 
     
-    def _cmd_lista_clientes(self):
+    def _cmd_lista_clientes(self, args):
+        if len(args) != 0:
+            raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
         return [OpCodes.OK_LISTA_CLIENTES, self.obter_skeleton().obter_loja().listar_clientes()]
 
     def _cmd_adiciona_produto_carrinho(self, args):
