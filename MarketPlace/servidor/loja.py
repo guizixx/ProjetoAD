@@ -128,7 +128,6 @@ class Loja:
     # Clientes
     #---------------
     def criar_cliente(self, nome, email, pw, id_cliente, permissao):
-        self.validar_id(id_cliente)
         for c in self._clientes.values():
             if c.obter_email() == email.lower():
                 raise excepcoes_shared.EmailJaExiste()
