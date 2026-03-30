@@ -1,6 +1,6 @@
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
-from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
+# from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
 
 OPCODES_VALIDOS = {
     OpCodes.CRIA_CATEGORIA,
@@ -47,6 +47,8 @@ class Processador:
         self.validar_pedido(pedido)
         self.stub.envia(pedido)
         resposta = self.stub.recebe()
+        nome = resposta[1][0].nome
+        print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Nome: {nome}")
         return resposta
 
     def formatar_resposta(self, resposta):
