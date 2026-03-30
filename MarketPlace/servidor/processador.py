@@ -137,7 +137,6 @@ class Processador:
 
             resultado = handler(args)
             print(f"SERVIDOR> Resultado do comando: {resultado}")
-            self.envia(sckt, resultado)
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
        
