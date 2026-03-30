@@ -30,6 +30,7 @@ class TCPSocketServidor:
         dados = b""
         while len(dados) < length:
             parte = conn_sock.recv(length - len(dados))
+            print(f"SERVIDOR> Recebido {len(parte)} bytes, total recebido: {len(dados) + len(parte)}/{length} bytes")
             if not parte:
                 raise excepcoes_shared.ExcecaoLigacaoInterrompida()
             dados += parte
