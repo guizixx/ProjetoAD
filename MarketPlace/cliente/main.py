@@ -57,7 +57,7 @@ def main():
             if not pedido.strip():
                 continue
 
-            if pedido.strip().upper() == "EXIT":
+            if pedido.strip().upper() == "EXIT" or pedido.strip().upper() == "QUIT":
                 break # testar como lida ao terminar com isto
 
             try:
@@ -69,6 +69,9 @@ def main():
 
             try:
                 resultado = processador.processar_pedido(pedido_formatado)
+                if resultado == "SERVIDOR_ENCERROU":
+                    print("CLIENTE> O servidor encerrou a ligação.")
+                    break
                 print(resultado)
             except ValueError as e:
                 print(f"CLIENTE> {e}")
