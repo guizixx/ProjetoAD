@@ -31,7 +31,9 @@ def main():
 
     print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
 
-    while True:
+    running = True
+    while running:
+        # print("Lista de sockets ativos: ", lista_sockets)
         R, W, X = sel.select(lista_sockets, [], []) # Espera sockets
 
         for sckt in R:
@@ -45,11 +47,22 @@ def main():
                 command = sys.stdin.readline().strip()
                 if command.upper() in ("EXIT","QUIT"):
                     print("SERVIDOR> A encerrar...")
+                    for sckt in lista_sockets:
+                        if sckt != sys.stdin:
+                            try:
+                                processador.envia(sckt, "SERVIDOR_ENCERROU")
+                                sckt.close()
+                                lista_sockets.remove(sckt)
+                            except Exception:
+                                pass
+                    print("SERVIDOR> Servidor encerrado.")
+                    running = False
                     break
             
             else: # Se for a socket de um cliente...
                 try:
                     pedido = processador.recebe(sckt)
+                    print(f"SERVIDOR> Pedido recebido do cliente: {pedido}")
                 except ExcecaoLigacaoInterrompida:
                     print(f"SERVIDOR> Cliente {sckt.fileno()} fechou a ligação.")
                     sckt.close()
@@ -60,7 +73,7 @@ def main():
                     continue
 
                 try:
-                    resposta = processador.processar_comando(pedido)
+                    resposta = processador.processar_comando(sckt, pedido)
                 except shared.excepcoes_shared.OperacaoNaoAutorizada:
                     resposta = [shared.excepcoes_shared.OpCodes.OPERACAO_NAO_AUTORIZADA, []]
                 except shared.excepcoes_shared.UtilizadorInvalido:
@@ -77,6 +90,7 @@ def main():
                         shared.excepcoes_shared.ExcepcaoValidacao) as e:
                     resposta = [e.code, [str(e)]]
                 except Exception as e:
+                    print("E dentro do main: ", e)
                     resposta = [shared.excepcoes_shared.OpCodes.ERRO_INTERNO_SERVIDOR, [str(e)]]
 
                 try:
@@ -87,13 +101,7 @@ def main():
                     sckt.close()
                     lista_sockets.remove(sckt)
                 
-    for sckt in lista_sockets:
-        if sckt != sys.stdin:
-            try:
-                sock.close()
-            except Exception:
-                pass
-    print("SERVIDOR> Servidor encerrado.")
+    
 
 if __name__ == "__main__":
     main()
