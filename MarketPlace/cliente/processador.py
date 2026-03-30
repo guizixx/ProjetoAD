@@ -1,6 +1,6 @@
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
-# from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
+from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
 
 OPCODES_VALIDOS = {
     OpCodes.CRIA_CATEGORIA,
@@ -113,7 +113,7 @@ class Processador:
         if opcode == OpCodes.OK_CRIA_CLIENTE:
             cliente = resposta[1][0]
             # print("Resposta do criar cliente: ", resposta[1][0])
-            return f"OK; Cliente criado com sucesso com identificador único {cliente.id}."
+            return f"OK; Cliente criado com sucesso com identificador único {cliente.id_cliente}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
             clientes = resposta[1]
@@ -175,7 +175,7 @@ class Processador:
         return f"NOK; Erro {opcode}: {detalhe}"
     
     def formatar_lista_encomendas(self, resposta):
-        encomendas       = resposta[1]
+        encomendas = resposta[1]
         produtos_por_enc = resposta[2] if len(resposta) > 2 else []
  
         if not encomendas:
@@ -183,15 +183,15 @@ class Processador:
  
         from operator import itemgetter
  
-        total_preco_geral   = round(sum(e.total_preco for e in encomendas), 2)
+        total_preco_geral = round(sum(e.total_preco for e in encomendas), 2)
         ids_produtos_vistos = []
-        cat_quantidades     = {}
-        linhas_encomendas   = []
+        cat_quantidades = {}
+        linhas_encomendas = []
  
         for i, enc in enumerate(encomendas):
-            itens         = produtos_por_enc[i] if i < len(produtos_por_enc) else []
+            itens = produtos_por_enc[i] if i < len(produtos_por_enc) else []
             total_qtd_enc = 0
-            linhas_prods  = []
+            linhas_prods = []
             for (prod, qtd, preco_enc) in itens:
                 total_qtd_enc += qtd
                 if prod.id_produto not in ids_produtos_vistos:
