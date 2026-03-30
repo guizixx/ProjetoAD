@@ -79,7 +79,7 @@ class Processador:
         except (ValueError, TypeError):
             raise shared.excepcoes_shared.TipoArgumentoInvalido("op_code/perfil/utilizador")
  
-        if op_code not in self.HANDLERS:
+        if op_code not in self.HANDLERS.keys():
             raise shared.excepcoes_shared.ComandoDesconhecido(op_code)
         if perfil not in [0, 1, 2, 3]:
             raise shared.excepcoes_shared.PerfilInvalido()
@@ -89,9 +89,6 @@ class Processador:
             raise shared.excepcoes_shared.ExcecaoArgumentoInvalido()
  
         return op_code, argumentos, perfil, utilizador
-    ## VERIFICAR OPCODES CORRETOS
-    #       IF IN SELF.HANDLERS.KEYS
-    # !!!!!!!!!!!!!!!!!!!1
     
     def _validar_n_args(self, args, n):
         if len(args) != n:
