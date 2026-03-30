@@ -43,19 +43,15 @@ class Loja:
         if self.obter_id_categoria(nome) is not None:
             raise excepcoes_shared.CategoriaJaExiste(nome)
         categoria = Categoria(nome)
-        self._categorias[categoria.id] = categoria
+        self._categorias[categoria.obter_id()] = categoria
         return categoria
     
     def lista_categorias(self):
         if len(self._categorias.values()) == 0:
             return [], []
-        cats = []
-        prods = []
-        for cat in self._categorias.values():
-            cats.append(cat.nome)
-        for prod in self._produtos.values():
-            prods.append(prod.nome)
-        return sorted(cats), sorted(prods)
+        cats = [cat for cat in self._categorias.values()]
+        prods =[prod for prod in self._produtos.values()]
+        return cats, prods
     
     def obter_id_categoria(self, nome): 
         for c in self._categorias.values(): 
@@ -77,6 +73,7 @@ class Loja:
         if self.obter_nr_produtos_categoria(nome) > 0:
             raise excepcoes_shared.CategoriaComProdutos()
         self._categorias.pop(categoria_id)
+        return self._categorias.get(categoria_id)
     
     #-----------------------
     # Produtos
@@ -94,18 +91,14 @@ class Loja:
         
         produto = Produto(nome_produto, nome_categoria, preco, quantidade)
         self._produtos[produto.obter_id()] = produto
-        return produto.nome
+        return produto
 
     def listar_produtos(self):
         if len(self._produtos.values()) == 0:
             return [], []
-        cats = []
-        prods = []
-        for cat in self._categorias.values():
-            cats.append(cat.nome)
-        for prod in self._produtos.values():
-            prods.append(prod.nome)
-        return sorted(cats), sorted(prods)
+        cats = [cat for cat in self._categorias.values()]
+        prods =[prod for prod in self._produtos.values()]
+        return cats, prods
     
     def obter_id_produto(self, nome):
         for p in self._produtos.values():
@@ -114,25 +107,28 @@ class Loja:
         return None
     
     def aumentar_stock_produto(self, nome, quantidade):
-        if self.obter_id_produto(nome) is None:
+        id_prod = self.obter_id_produto(nome)
+        if id_prod is None:
             raise excepcoes_shared.ProdutoNaoExiste()
         if int(quantidade) < 0:
             raise excepcoes_shared.QuantidadeInvalida()
-
-        self._produtos.get(self.obter_id_produto(nome)).adicionar_quantidade(quantidade)
+        self._produtos.get(id_prod).adicionar_quantidade(quantidade)
+        return self._produtos.get(id_prod)
 
     def atualizar_preco_produto(self, nome, novo_preco):
-        if self.obter_id_produto(nome) is None:
+        id_prod = self.obter_id_produto(nome)
+        if id_prod is None:
             raise excepcoes_shared.ProdutoNaoExiste()
         if novo_preco < 0:
             raise excepcoes_shared.PrecoInvalido()
         
-        self._produtos.get(self.obter_id_produto(nome)).alterar_preco(novo_preco)
-
+        self._produtos.get(id_prod).alterar_preco(novo_preco)
+        return self._produtos.get(id_prod)
     #---------------
     # Clientes
     #---------------
     def criar_cliente(self, nome, email, pw, id_cliente, permissao):
+        self.validar_id(id_cliente)
         for c in self._clientes.values():
             if c.obter_email() == email.lower():
                 raise excepcoes_shared.EmailJaExiste()
@@ -143,12 +139,13 @@ class Loja:
     def listar_clientes(self):
         if len(self._clientes.values()) == 0:
             return []
-        return sorted([c.obter_nome() for c in self._clientes])
+        return [c for c in self._clientes]
     
     #--------------
     # Carrinho
     #--------------
     def adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
+        self.validar_id(id_cliente)
         if self.obter_id_produto(nome_produto) is None:
             raise excepcoes_shared.ProdutoNaoExiste()
         if quantidade <= 0:
@@ -162,8 +159,10 @@ class Loja:
         else:
             self._clientes.get(id_cliente).obter_carrinho_compras()[id_produto] = quantidade
         self._produtos.get(id_produto).adicionar_quantidade(-quantidade)
+        return self._produtos.get(id_produto)
     
     def remover_produto_carrinho(self, id_cliente, nome_produto):
+        self.validar_id(id_cliente)
         if self.obter_id_produto(nome_produto) is None:
             raise excepcoes_shared.ProdutoNaoExiste()
 
@@ -176,8 +175,10 @@ class Loja:
         quantidade = carrinho[id_produto]
         carrinho.pop(id_produto)
         self._produtos.get(id_produto).adicionar_quantidade(quantidade)
+        return self._produtos.get(id_produto)
 
     def lista_carrinho_cliente(self, id_cliente):
+        self.validar_id(id_cliente)
         carrinho = self._clientes.get(id_cliente).obter_carrinho_compras()
         if len(carrinho) < 1:
             return [], []
@@ -189,10 +190,10 @@ class Loja:
             cat = prod.obter_categoria()
             if cat not in cats:
                 cats.append(cat)
-
-        return sorted(cats), sorted(prods)
+        return cats, prods
 
     def checkout_carrinho(self, id_cliente):
+        self.validar_id(id_cliente)
         if len(self._clientes.get(id_cliente).obter_carrinho_compras()) < 1:
             raise excepcoes_shared.CarrinhoVazio()
         total = 0
@@ -209,29 +210,28 @@ class Loja:
         encomenda = Encomenda(datetime.now().replace(microsecond=0), carrinho_encomenda, id_cliente, total)
         self._encomendas[encomenda.obter_id()] = encomenda
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
-        return encomenda.id
+        return encomenda
 
     #-----------------
     # Encomendas
     #-----------------
     def lista_encomendas(self, id_cliente):
-        cliente = self._clientes.get(id_cliente)
+        self.validar_id(id_cliente)
         encomendas_cliente = []
+        produtos_por_encomenda = []
+        nr_encomendas_cliente = 0
         for e in self._encomendas.values():
             if e.obter_cliente_id() == id_cliente:
                 nr_encomendas_cliente += 1
                 encomendas_cliente.append(e)
-        if nr_encomendas_cliente == 0:
-            return [], []
-        
-        produtos_por_encomenda = []
-        for e in encomendas_cliente:
-            carrinho_encomenda = e.obter_carrinho_compras()
-            produtos_encomenda = []
 
-            for k in carrinho_encomenda.keys():
-                produtos_encomenda.append(self._produtos.get(k).obter_nome())
-            produtos_por_encomenda.append(produtos_encomenda)
+                # produtos da encomenda
+                carrinho_encomenda = e.obter_carrinho_compras()
+                produtos_encomenda = []
+
+                for k in carrinho_encomenda.keys():
+                    produtos_encomenda.append(self._produtos.get(k))
+                produtos_por_encomenda.append(produtos_encomenda)
 
         return encomendas_cliente, produtos_por_encomenda
     #-----------------
@@ -240,6 +240,10 @@ class Loja:
     def validar_utilizador(self, perfil, utilizador, operacao):
         # print("OPCODE dentro de validar_utilizador da loja: ", operacao)
         if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE) & (utilizador not in self._clientes.keys()):
+            raise excepcoes_shared.UtilizadorInvalido()
+        
+    def validar_id(self, id_cliente):
+        if id_cliente not in self._clientes.keys():
             raise excepcoes_shared.UtilizadorInvalido()
         
         # de certeza que vao faltar casos a adicionar aqui para poder validar o utilizador em todas as situaçoes

@@ -57,7 +57,7 @@ def main():
             if not pedido.strip():
                 continue
 
-            if pedido.strip().upper() == "EXIT" or pedido.strip().upper() == "QUIT":
+            if pedido.strip().upper() in ("EXIT", "QUIT"):
                 break # testar como lida ao terminar com isto
 
             try:

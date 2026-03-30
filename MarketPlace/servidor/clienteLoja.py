@@ -8,15 +8,15 @@
 class ClienteLoja:
 
     def __init__(self, nome, email, pw, id, permissao):
-        self.id = id
+        self.id_cliente = id
         self.nome = nome
         self.email = email
-        self.pw = pw
+        self.password = pw
         self.carrinho_compras = {}  # { id_produto : quantidade }
         self.permissao = permissao
 
     def obter_id(self):
-        return self.id
+        return self.id_cliente
     
     def obter_nome(self):
         return self.nome

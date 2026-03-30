@@ -153,7 +153,7 @@ class Processador:
                                                    OpCodes.CATEGORIA_NAO_EXISTE)
         
         categoria = self.obter_skeleton().obter_loja().criar_categoria(nome_categoria)
-        return [OpCodes.OK_CRIA_CATEGORIA, [categoria.nome]]
+        return [OpCodes.OK_CRIA_CATEGORIA, [categoria]]
     
     def _cmd_lista_categorias(self):        
         categorias, produtos = self.obter_skeleton().obter_loja().lista_categorias()
@@ -176,8 +176,8 @@ class Processador:
         except ValueError:
             raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
-        produto_nome = self.obter_skeleton().obter_loja().criar_produto(nome_produto, nome_categoria, preco, quantidade)    
-        return [OpCodes.OK_CRIA_PRODUTO, [produto_nome]]
+        produto = self.obter_skeleton().obter_loja().criar_produto(nome_produto, nome_categoria, preco, quantidade)    
+        return [OpCodes.OK_CRIA_PRODUTO, [produto]]
     
     def _cmd_lista_produtos(self):
         categorias, produtos = self.obter_skeleton().obter_loja().listar_produtos()
@@ -190,8 +190,8 @@ class Processador:
         except ValueError:
             raise shared.excepcoes_shared.TipoArgumentoInvalido()
 
-        self.obter_skeleton().obter_loja().aumentar_stock_produto(nome_produto, quantidade_delta)
-        return [OpCodes.OK_AUMENTA_STOCK, [nome_produto]]
+        produto = self.obter_skeleton().obter_loja().aumentar_stock_produto(nome_produto, quantidade_delta)
+        return [OpCodes.OK_AUMENTA_STOCK, [produto]]
 
     def _cmd_atualiza_preco_produto(self, args):
         nome_produto = normalizar_nome(args[0])
@@ -199,8 +199,8 @@ class Processador:
             novo_preco = float(args[1])
         except ValueError:
             raise shared.excepcoes_shared.PrecoInvalido()
-        self.obter_skeleton().obter_loja().atualizar_preco_produto(nome_produto, novo_preco)
-        return [OpCodes.OK_ATUALIZA_PRECO, [nome_produto]]
+        produto = self.obter_skeleton().obter_loja().atualizar_preco_produto(nome_produto, novo_preco)
+        return [OpCodes.OK_ATUALIZA_PRECO, [produto]]
 
     def _cmd_cria_cliente(self, args):
         nome = normalizar_nome(args[0])
@@ -224,14 +224,14 @@ class Processador:
             raise shared.excepcoes_shared.QuantidadeInvalida()
         nome_produto = normalizar_nome(args[0])
         id_cliente = int(args[2])
-        self.obter_skeleton().obter_loja().adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
-        return [OpCodes.OK_ADICIONA_CARRINHO,[nome_produto]]
+        produto = self.obter_skeleton().obter_loja().adiciona_produto_carrinho(id_cliente, nome_produto, quantidade)
+        return [OpCodes.OK_ADICIONA_CARRINHO,[produto]]
     
     def _cmd_remove_produto_carrinho(self, args):
         nome_produto = normalizar_nome(args[0])
         id_cliente = args[1]
-        self.obter_skeleton().obter_loja().remover_produto_carrinho(id_cliente, nome_produto)
-        return [OpCodes.OK_REMOVE_CARRINHO, [nome_produto]]
+        produto = self.obter_skeleton().obter_loja().remover_produto_carrinho(id_cliente, nome_produto)
+        return [OpCodes.OK_REMOVE_CARRINHO, [produto]]
     
     def _cmd_lista_carrinho(self, args):
         id_cliente = args[0]
@@ -240,13 +240,10 @@ class Processador:
 
     def _cmd_checkout_carrinho(self, args):
         id_cliente = args[0]
-        encomenda_id = self.obter_skeleton().obter_loja().checkout_carrinho(id_cliente)
-        return [OpCodes.OK_CHECKOUT, [encomenda_id]]
+        encomenda = self.obter_skeleton().obter_loja().checkout_carrinho(id_cliente)
+        return [OpCodes.OK_CHECKOUT, [encomenda]]
     
     def _cmd_lista_encomendas(self, args):
         id_cliente = int(args[0])
         encomendas, produtos_por_encomenda = self.obter_skeleton().obter_loja().lista_encomendas(id_cliente)
-        ans = [OpCodes.OK_LISTA_ENCOMENDAS, encomendas]
-        for p in produtos_por_encomenda:
-            ans.append(p)
-        return ans
+        return [OpCodes.OK_LISTA_ENCOMENDAS, encomendas, produtos_por_encomenda]
