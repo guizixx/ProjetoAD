@@ -40,14 +40,14 @@ class Processador:
                         # opcode:  [ handler, permissão mínima para poder executar a operação, numero_args a serem passados ]
         self.HANDLERS = {
             OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3, 1],
-            OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 3, 0],
+            OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 0, 1],
             OpCodes.REMOVE_CATEGORIA: [self._cmd_remove_categoria, 3, 1],
             OpCodes.CRIA_PRODUTO: [self._cmd_cria_produto, 2, 4],
-            OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 0],
+            OpCodes.LISTA_PRODUTOS: [self._cmd_lista_produtos, 0, 1],
             OpCodes.AUMENTA_STOCK: [self._cmd_aumenta_stock_produto, 2, 2],
             OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2, 2],
             OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0, 5], 
-            OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2, 0],
+            OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2, 1],
             OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1, 2],
             OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1, 1],
             OpCodes.LISTA_CARRINHO: [self._cmd_lista_carrinho, 1, 0],
