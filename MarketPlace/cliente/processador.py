@@ -1,6 +1,7 @@
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
 from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
+from operator import itemgetter
 
 COMANDOS_VALIDOS = {
     "CRIA_CATEGORIA": [OpCodes.CRIA_CATEGORIA, 1],
@@ -136,16 +137,16 @@ class Processador:
  
         if opcode == OpCodes.OK_AUMENTA_STOCK:
             prod = resposta[1][0]
-            return f"OK; Stock do produto {prod.nome} aumentado com sucesso."
+            return f"OK; Stock do produto {prod.obter_nome()} aumentado com sucesso."
  
         if opcode == OpCodes.OK_ATUALIZA_PRECO:
             prod = resposta[1][0]
-            return f"OK; O preço do produto {prod.nome} foi atualizado para {prod.preco:.2f} com sucesso."
+            return f"OK; O preço do produto {prod.obter_nome()} foi atualizado para {prod.obter_preco():.2f} com sucesso."
  
         if opcode == OpCodes.OK_CRIA_CLIENTE:
             cliente = resposta[1][0]
             # print("Resposta do criar cliente: ", resposta[1][0])
-            return f"OK; Cliente criado com sucesso com identificador único {cliente.id_cliente}."
+            return f"OK; Cliente criado com sucesso com identificador único {cliente.obter_id()}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
             clientes = resposta[1][0]
@@ -153,7 +154,7 @@ class Processador:
                 return "OK; Sem Clientes."
             linhas = [f"\nTotal Clientes: {len(clientes)} \n"]
             for c in clientes:
-                linhas.append(f"{c.id_cliente} - {c.nome} ({c.email});")
+                linhas.append(f"{c.obter_cliente()} - {c.obter_nome()} ({c.obter_email()});")
             return "OK;" + "\n".join(linhas)
  
         if opcode == OpCodes.OK_ADICIONA_CARRINHO:
@@ -167,21 +168,22 @@ class Processador:
         if opcode == OpCodes.OK_LISTA_CARRINHO:
             categorias = resposta[1][0]
             itens = resposta[1][1]
+            print(f"CLIENTE> Categorias: {categorias}. Itens: {itens}")
             if not itens:
                 return "OK; Carrinho Vazio."
-            total_qtd = sum(qtd for (_, qtd) in itens)
-            total_preco = sum(prod.preco * qtd for (prod, qtd) in itens)
-            cat_map = {c.id_categoria: c for c in categorias}
+            total_qtd = sum(prod.obter_quantidade() for prod in itens)
+            total_preco = sum(prod.obter_preco() * prod.obter_quantidade() for prod in itens)
+            cat_map = {c.obter_nome(): c for c in categorias}
             linhas = [f"\nTotal Produtos: {len(itens)}",
                       f"Total Quantidade: {total_qtd}",
-                      f"Total Preço: {total_preco:.2f} euros"]
-            for (prod, qtd) in itens:
-                cat = cat_map.get(prod.id_categoria, None)
-                cat_str = (f"{prod.id_categoria}-{prod.categoria}"
-                           if cat is None else f"{cat.id_categoria}-{cat.nome}")
+                      f"Total Preço: {total_preco:.2f} euros \n"]
+            for prod in itens:
+                cat = cat_map.get(prod.obter_categoria(), None)
+                cat_str = (f"{cat.obter_id()}-{cat.obter_nome()}"
+                           if cat is None else f"{cat.obter_id()}-{cat.obter_nome()}")
                 linhas.append(
-                    f"{prod.id_produto} - {prod.nome} ({cat_str}, "
-                    f"{prod.preco:.2f} euros, {qtd} unidades);"
+                    f"{prod.obter_id()} - {prod.obter_nome()} ({cat_str}, "
+                    f"{prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
             return "OK;" + "\n".join(linhas)
  
@@ -207,15 +209,13 @@ class Processador:
         return f"NOK; Erro {opcode}: {detalhe}"
     
     def formatar_lista_encomendas(self, resposta):
-        encomendas = resposta[1]
-        produtos_por_enc = resposta[2] if len(resposta) > 2 else []
+        encomendas = resposta[1][0]
+        produtos_por_enc = resposta[1][1]
  
         if not encomendas:
             return "OK; Sem encomendas."
  
-        from operator import itemgetter
- 
-        total_preco_geral = round(sum(e.total_preco for e in encomendas), 2)
+        total_preco_geral = round(sum(e.obter_total() for e in encomendas), 2)
         ids_produtos_vistos = []
         cat_quantidades = {}
         linhas_encomendas = []
@@ -224,23 +224,23 @@ class Processador:
             itens = produtos_por_enc[i] if i < len(produtos_por_enc) else []
             total_qtd_enc = 0
             linhas_prods = []
-            for (prod, qtd, preco_enc) in itens:
-                total_qtd_enc += qtd
-                if prod.id_produto not in ids_produtos_vistos:
-                    ids_produtos_vistos.append(prod.id_produto)
-                cat_quantidades[prod.categoria] = (
-                    cat_quantidades.get(prod.categoria, 0) + qtd
+            for prod in itens:
+                total_qtd_enc += prod.obter_quantidade()
+                if prod.obter_id() not in ids_produtos_vistos:
+                    ids_produtos_vistos.append(prod.obter_id())
+                cat_quantidades[prod.obter_categoria()] = (
+                    cat_quantidades.get(prod.obter_categoria(), 0) + prod.obter_quantidade()
                 )
                 linhas_prods.append(
-                    f"{prod.id_produto} - {prod.nome} "
-                    f"({prod.categoria}, {preco_enc:.2f} euros, {qtd} unidades);"
+                    f"{prod.obter_id()} - {prod.obter_nome()} "
+                    f"({prod.obter_categoria()}, {prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
             linhas_encomendas += [
-                f"ID Encomenda: {enc.id_encomenda}",
-                f"Data Encomenda: {enc.data}",
+                f"ID Encomenda: {enc.obter_id()}",
+                f"Data Encomenda: {enc.obter_data()}",
                 f"Total Produtos: {len(itens)}",
                 f"Total Quantidade: {total_qtd_enc}",
-                f"Total Preço: {enc.total_preco:.2f} euros\n",
+                f"Total Preço: {enc.obter_total():.2f} euros\n",
             ] + linhas_prods + ["\n"]
  
         cats_ord = sorted(cat_quantidades.items(), key=itemgetter(1), reverse=True)
@@ -259,9 +259,87 @@ class Processador:
         linhas = [
             f"\nTotal Encomendas: {len(encomendas)}",
             f"Total Produtos: {len(ids_produtos_vistos)}",
-            f"Total Preço: {total_preco_geral}",
+            f"Total Preço: {total_preco_geral} euros",
             cat_top_str,
-            "--------------------------------------------------------------------------",
+            "\n",
         ] + linhas_encomendas
  
         return "OK;" + "\n".join(linhas)
+
+    
+    # Para basear na lógica de manter os detalhes já mandados pelo servidor
+    def formatar_nok_do_amigo(self, resposta):
+        opcode = resposta[0]
+        detalhe = resposta[1] if len(resposta) > 1 else []
+
+        # 1) Se o servidor já enviou uma mensagem humana, reutiliza-a.
+        if isinstance(detalhe, list) and detalhe:
+            # Normalmente é [str(e)]
+            msg = detalhe[0]
+            if isinstance(msg, str) and msg.strip():
+                return f"NOK; {msg}"
+
+        # 2) Caso contrário, traduz por opcode (para casos em que o servidor envia []).
+        mensagens = {
+            # --------- 39xxx (protocolo/validação/autorização/execução) ----------
+            OpCodes.ERRO_GENERICO: "Erro genérico.",
+            OpCodes.OP_CODE_INVALIDO: "Op_code inválido.",
+            OpCodes.MENSAGEM_MAL_FORMADA: "Mensagem mal formada.",
+            OpCodes.PEDIDO_NAO_E_LISTA: "Pedido inválido. Pedido deve ser uma lista.",
+            OpCodes.NUMERO_CAMPOS_INVALIDO: "Pedido inválido. Pedido deve ter 4 campos.",
+            OpCodes.ARGUMENTOS_NAO_SAO_LISTA: "O segundo campo (argumentos) deve ser uma lista.",
+            OpCodes.PERFIL_INVALIDO: "Perfil inválido.",
+            OpCodes.ID_UTILIZADOR_INVALIDO: "id_utilizador inválido.",
+            OpCodes.SERIALIZACAO_INVALIDA: "Erro ao serializar dados antes de enviar.",
+            OpCodes.DESSERIALIZACAO_INVALIDA: "Erro ao desserializar dados recebidos.",
+            OpCodes.LIGACAO_INTERROMPIDA: "Ligação interrompida.",
+            OpCodes.NUMERO_ARGUMENTOS_INVALIDO: "Número de argumentos inválido.",
+            OpCodes.TIPO_ARGUMENTO_INVALIDO: "Tipo de argumento inválido.",
+            OpCodes.VALOR_ARGUMENTO_INVALIDO: "Valor de argumento inválido.",
+            OpCodes.ARGUMENTO_VAZIO: "Argumento vazio.",
+            OpCodes.OPERACAO_NAO_AUTORIZADA: "Operação não autorizada.",
+            OpCodes.UTILIZADOR_NAO_AUTENTICADO: "Utilizador não autenticado.",
+            OpCodes.ERRO_INTERNO_SERVIDOR: "Erro interno do servidor.",
+
+            # --------- 3xxxx (negócio) ----------
+            OpCodes.CATEGORIA_JA_EXISTE: "A categoria já existe.",
+            OpCodes.CATEGORIA_NAO_EXISTE: "A categoria não existe.",
+            OpCodes.CATEGORIA_COM_PRODUTOS: "A categoria tem produtos associados com stock.",
+
+            OpCodes.PRODUTO_JA_EXISTE: "O produto já existe.",
+            OpCodes.CATEGORIA_NAO_EXISTE_PRODUTO: "A categoria não existe.",
+            OpCodes.PRECO_INVALIDO: "Preço inválido.",
+            OpCodes.QUANTIDADE_INVALIDA: "Quantidade inválida.",
+            OpCodes.NOME_PRODUTO_INVALIDO: "Nome do produto inválido.",
+
+            OpCodes.PRODUTO_NAO_EXISTE: "O produto não existe.",
+            OpCodes.INCREMENTO_INVALIDO: "Valor de incremento inválido.",
+
+            OpCodes.PRODUTO_NAO_EXISTE_PRECO: "O produto não existe.",
+            OpCodes.NOVO_PRECO_INVALIDO: "Novo preço inválido.",
+
+            OpCodes.EMAIL_JA_EXISTE: "Email já registado.",
+            OpCodes.NOME_CLIENTE_INVALIDO: "Nome do cliente inválido.",
+            OpCodes.EMAIL_INVALIDO: "Email inválido.",
+            OpCodes.PASSWORD_INVALIDA: "Password inválida.",
+
+            OpCodes.CLIENTE_NAO_EXISTE: "Cliente não existe.",
+            OpCodes.PRODUTO_NAO_EXISTE_CARRINHO: "O produto não existe.",
+            OpCodes.QUANTIDADE_INVALIDA_CARRINHO: "Quantidade inválida.",
+            OpCodes.STOCK_INSUFICIENTE: "Stock insuficiente.",
+
+            OpCodes.CLIENTE_NAO_EXISTE_REMOVE: "Cliente não existe.",
+            OpCodes.PRODUTO_NAO_EXISTE_REMOVE: "O produto não existe.",
+            OpCodes.PRODUTO_NAO_NO_CARRINHO: "Produto não está no carrinho.",
+
+            OpCodes.CLIENTE_NAO_EXISTE_LISTA: "Cliente não existe.",
+
+            OpCodes.CLIENTE_NAO_EXISTE_CHECKOUT: "Cliente não existe.",
+            OpCodes.CARRINHO_VAZIO: "Carrinho vazio.",
+            OpCodes.FALHA_ENCOMENDA: "Falha ao criar encomenda.",
+
+            OpCodes.CLIENTE_NAO_EXISTE_ENCOMENDAS: "Cliente não existe.",
+        }
+
+        msg = mensagens.get(opcode, f"Erro {opcode}.")
+        return f"{msg}"
