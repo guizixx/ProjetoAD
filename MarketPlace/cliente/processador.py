@@ -2,7 +2,7 @@ from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
 from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
 
-OPCODES_VALIDOS = {
+COMANDOS_VALIDOS = {
     OpCodes.CRIA_CATEGORIA,
     OpCodes.LISTA_CATEGORIAS,
     OpCodes.REMOVE_CATEGORIA,
@@ -24,27 +24,57 @@ class Processador:
     def __init__(self, stub):
         self.stub = stub
 
-    def validar_pedido(self, pedido):
-        opcode = pedido[0]
-        lista_args = pedido[1]
-        perfil = pedido[2]
-        id_utilizador = pedido[3]
-
-        if not isinstance(pedido, list):
-            raise ValueError("Pedido deve ser uma lista.")
-        if len(pedido) != 4:
-            raise ValueError(f"O pedido deve conter 4 campos, tem {len(pedido)}.")
-        if not isinstance(opcode, int) or opcode not in OPCODES_VALIDOS:
-            raise ValueError(f"Op_code inválido: {opcode}.")
-        if not isinstance(lista_args, list):
-            raise ValueError("O segundo campo (argumentos) deve ser uma lista.")
-        if not isinstance(perfil, int) or perfil not in [0, 1, 2, 3]:
-            raise ValueError(f"Perfil inválido: {perfil}. Deve ser 0, 1, 2 ou 3.")
-        if not isinstance(id_utilizador, int) or id_utilizador < 0:
-            raise ValueError(f"id_utilizador inválido: {id_utilizador}. Deve ser um inteiro não negativo.")
+    def validar_pedido(self, comando, args):
+        
+        if comando not in COMANDOS_VALIDOS:
+            raise shared.excepcoes_shared.ComandoMalFormado()
+        if len(args) != COMANDOS_VALIDOS.get(comando)[1]:
+            raise shared.excepcoes_shared.NumeroArgumentosInvalido()
+        opc = COMANDOS_VALIDOS.get(comando)[0]
+        args_norm = self.validar_args(args)
+        return opc, args_norm
     
+    def validar_args(self, comando, args):
+        if comando == "CRIA_PRODUTO":
+            try:
+                preco = float(args[2])
+                qtd = int(args[3])
+            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+                raise e
+            args[2] = preco
+            args[3] = qtd
+            
+        elif comando == "AUMENTA_STOCK_PRODUTO":
+            try:
+                qtd = args[1]
+            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+                raise e
+            args[1] = qtd
+
+        elif comando == "ATUALIZA_PRECO_PRODUTO":
+            try:
+                qtd = args[1]
+            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+                raise e
+            args[1] = qtd
+
+        elif comando == "ADICIONA_PRODUTO_CARRINHO":
+            try:
+                qtd = args[1]
+            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+                raise e
+            args[1] = qtd
+
+        elif comando == "LISTA_ENCOMENDAS":
+            try:
+                id = args[0]
+            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
+                raise e
+            args[0] = id
+
+        return args
+
     def processar_pedido(self, pedido):
-        self.validar_pedido(pedido)
         self.stub.envia(pedido)
         resposta = self.stub.recebe()
         # nome = resposta[1][0].nome
