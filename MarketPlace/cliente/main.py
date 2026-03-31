@@ -61,7 +61,7 @@ def main():
                 break # testar como lida ao terminar com isto
 
             try:
-                pedido_formatado = ast.literal_eval(pedido.strip())
+                pedido_formatado = ast.literal_eval(pedido)
                 # print(f"CLIENTE> Pedido formatado: {pedido_formatado}")
             except (SyntaxError, ValueError):
                 print("CLIENTE> Formato de pedido inválido. Exemplo de formato: [10100, [\"Fruta\"], 3, 1]")
