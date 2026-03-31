@@ -29,7 +29,7 @@ def main():
 
     lista_sockets = [sock_escuta, sys.stdin]
 
-    print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
+    #print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
 
     # adição de admins e funcionários fictícios
     #      2 funcionários     2 admins
@@ -95,7 +95,7 @@ def main():
                         shared.excepcoes_shared.ExcepcaoValidacao) as e:
                     resposta = [e.code, [str(e)]]
                 except Exception as e:
-                    print("E dentro do main: ", e)
+                    #print("E dentro do main: ", e)
                     resposta = [shared.excepcoes_shared.OpCodes.ERRO_INTERNO_SERVIDOR, [str(e)]]
 
                 try:
@@ -106,7 +106,5 @@ def main():
                     sckt.close()
                     lista_sockets.remove(sckt)
                 
-    
-
 if __name__ == "__main__":
     main()

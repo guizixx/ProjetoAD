@@ -75,11 +75,8 @@ class Processador:
  
         try:
             op_code = int(comando[0])
-            print(f"SERVIDOR> Op_code recebido: {op_code}")
             perfil = int(comando[2])
-            print(f"SERVIDOR> Perfil recebido: {perfil}")
             utilizador = int(comando[3])
-            print(f"SERVIDOR> ID utilizador recebido: {utilizador}")
         except (ValueError, TypeError):
             raise shared.excepcoes_shared.TipoArgumentoInvalido("op_code/perfil/utilizador")
  
@@ -117,7 +114,7 @@ class Processador:
     def processar_comando(self, sckt, comando):
         try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
-            print(f"SERVIDOR> Comando dividido: opcode={opcode}, args={args}, perfil={perfil}, utilizador={utilizador}")
+            #print(f"SERVIDOR> Comando dividido: opcode={opcode}, args={args}, perfil={perfil}, utilizador={utilizador}")
             self._validar_permissao(perfil, opcode)
             self._validar_utilizador(perfil, utilizador, opcode)
             handler = self._obter_handler(opcode)
@@ -136,7 +133,7 @@ class Processador:
             self._validar_n_args(args, self.HANDLERS.get(opcode)[2])
 
             resultado = handler(args)
-            print(f"SERVIDOR> Resultado do comando: {resultado}")
+            #print(f"SERVIDOR> Resultado do comando: {resultado}")
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
        

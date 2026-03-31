@@ -78,14 +78,11 @@ class Processador:
     def processar_pedido(self, pedido):
         self.stub.envia(pedido)
         resposta = self.stub.recebe()
-        # nome = resposta[1][0].nome
-        # print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Nome: {nome}")
         return self.formatar_resposta(resposta)
 
     def formatar_resposta(self, resposta):
         if resposta == "SERVIDOR_ENCERROU":
             return resposta
-        print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Tamanho: {len(resposta)}")
         if not isinstance(resposta, list) or len(resposta) != 2:
             return f"Resposta inesperada: {resposta}"
         opcode = resposta[0]
@@ -98,33 +95,33 @@ class Processador:
  
         if opcode == OpCodes.OK_CRIA_CATEGORIA:
             cat = resposta[1][0]
-            return f"OK; Categoria {cat.nome} criada com sucesso."
+            return f"Categoria {cat.nome} criada com sucesso."
  
         if opcode == OpCodes.OK_LISTA_CATEGORIAS:
             categorias = resposta[1][0]
             produtos   = resposta[1][1]
             if not categorias:
-                return "OK; Sem Categorias."
+                return "Sem Categorias."
             linhas = [f"\nTotal Categorias: {len(categorias)}",
                       f"Total Produtos: {len(produtos)} \n"]
             for c in categorias:
                 n_prod = sum(1 for p in produtos if p.categoria == c.nome)
                 linhas.append(f"{c.id_categoria} - {c.nome} ({n_prod} produtos);")
-            return "OK;" + "\n".join(linhas)
+            return "".join(linhas)
  
         if opcode == OpCodes.OK_REMOVE_CATEGORIA:
             nome_categoria = resposta[1][0].nome
-            return f"OK; Categoria {nome_categoria} removida com sucesso."
+            return f"Categoria {nome_categoria} removida com sucesso."
  
         if opcode == OpCodes.OK_CRIA_PRODUTO:
             prod = resposta[1][0]
-            return f"OK; Produto {prod.nome} criado com sucesso."
+            return f"Produto {prod.nome} criado com sucesso."
  
         if opcode == OpCodes.OK_LISTA_PRODUTOS:
             categorias = resposta[1][0]
             produtos   = resposta[1][1]
             if not produtos:
-                return "OK; Sem Produtos."
+                return "Sem Produtos."
             total_qtd = sum(p.quantidade for p in produtos)
             linhas = [f"\nTotal Produtos: {len(produtos)}",
                       f"Total Quantidade: {total_qtd} \n"]
@@ -133,44 +130,43 @@ class Processador:
                     f"{p.id_produto} - {p.nome} ({p.categoria}, "
                     f"{p.preco:.2f} euros, {p.quantidade} unidades);"
                 )
-            return "OK;" + "\n".join(linhas)
+            return "".join(linhas)
  
         if opcode == OpCodes.OK_AUMENTA_STOCK:
             prod = resposta[1][0]
-            return f"OK; Stock do produto {prod.obter_nome()} aumentado com sucesso."
+            return f"Stock do produto {prod.obter_nome()} aumentado com sucesso."
  
         if opcode == OpCodes.OK_ATUALIZA_PRECO:
             prod = resposta[1][0]
-            return f"OK; O preço do produto {prod.obter_nome()} foi atualizado para {prod.obter_preco():.2f} com sucesso."
+            return f"O preço do produto {prod.obter_nome()} foi atualizado para {prod.obter_preco():.2f} com sucesso."
  
         if opcode == OpCodes.OK_CRIA_CLIENTE:
             cliente = resposta[1][0]
             # print("Resposta do criar cliente: ", resposta[1][0])
-            return f"OK; Cliente criado com sucesso com identificador único {cliente.obter_id()}."
+            return f"Cliente criado com sucesso com identificador único {cliente.obter_id()}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
             clientes = resposta[1][0]
             if not clientes:
-                return "OK; Sem Clientes."
+                return "Sem Clientes."
             linhas = [f"\nTotal Clientes: {len(clientes)} \n"]
             for c in clientes:
                 linhas.append(f"{c.obter_cliente()} - {c.obter_nome()} ({c.obter_email()});")
-            return "OK;" + "\n".join(linhas)
+            return "".join(linhas)
  
         if opcode == OpCodes.OK_ADICIONA_CARRINHO:
             prod = resposta[1][0]
-            return f"OK; Produto {prod.nome} adicionado com sucesso ao carrinho."
+            return f"Produto {prod.nome} adicionado com sucesso ao carrinho."
  
         if opcode == OpCodes.OK_REMOVE_CARRINHO:
             prod = resposta[1][0]
-            return f"OK; Produto {prod.nome} removido com sucesso do carrinho de compras."
+            return f"Produto {prod.nome} removido com sucesso do carrinho de compras."
  
         if opcode == OpCodes.OK_LISTA_CARRINHO:
             categorias = resposta[1][0]
             itens = resposta[1][1]
-            print(f"CLIENTE> Categorias: {categorias}. Itens: {itens}")
             if not itens:
-                return "OK; Carrinho Vazio."
+                return "Carrinho Vazio."
             total_qtd = sum(prod.obter_quantidade() for prod in itens)
             total_preco = sum(prod.obter_preco() * prod.obter_quantidade() for prod in itens)
             cat_map = {c.obter_nome(): c for c in categorias}
@@ -185,10 +181,10 @@ class Processador:
                     f"{prod.obter_id()} - {prod.obter_nome()} ({cat_str}, "
                     f"{prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
-            return "OK;" + "\n".join(linhas)
+            return "".join(linhas)
  
         if opcode == OpCodes.OK_CHECKOUT:
-            return ("OK; Checkout de carrinho de compras efetuado com sucesso. "
+            return ("Checkout de carrinho de compras efetuado com sucesso. "
                     "Encomenda criada com sucesso a partir do carrinho.")
  
         if opcode == OpCodes.OK_LISTA_ENCOMENDAS:
@@ -197,7 +193,7 @@ class Processador:
         if opcode == OpCodes.LIGACAO_INTERROMPIDA:
             return 
  
-        return f"OK; {resposta[1]}"
+        return f"{resposta[1]}"
 
     def formatar_nok(self, resposta):
         opcode = resposta[0]
@@ -206,14 +202,14 @@ class Processador:
         else:
             detalhe = []
         
-        return f"NOK; Erro {opcode}: {detalhe}"
+        return f"Erro {opcode}: {detalhe}"
     
     def formatar_lista_encomendas(self, resposta):
         encomendas = resposta[1][0]
         produtos_por_enc = resposta[1][1]
  
         if not encomendas:
-            return "OK; Sem encomendas."
+            return "Sem encomendas."
  
         total_preco_geral = round(sum(e.obter_total() for e in encomendas), 2)
         ids_produtos_vistos = []
@@ -264,7 +260,7 @@ class Processador:
             "\n",
         ] + linhas_encomendas
  
-        return "OK;" + "\n".join(linhas)
+        return "".join(linhas)
 
     
     # Para basear na lógica de manter os detalhes já mandados pelo servidor
@@ -277,7 +273,7 @@ class Processador:
             # Normalmente é [str(e)]
             msg = detalhe[0]
             if isinstance(msg, str) and msg.strip():
-                return f"NOK; {msg}"
+                return f"{msg}"
 
         # 2) Caso contrário, traduz por opcode (para casos em que o servidor envia []).
         mensagens = {
@@ -341,5 +337,7 @@ class Processador:
             OpCodes.CLIENTE_NAO_EXISTE_ENCOMENDAS: "Cliente não existe.",
         }
 
-        msg = mensagens.get(opcode, f"Erro {opcode}.")
-        return f"{msg}"
+        msg = mensagens.get(opcode)
+        return f"{opcode}{msg}"
+    
+

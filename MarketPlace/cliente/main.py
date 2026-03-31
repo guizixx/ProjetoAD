@@ -47,7 +47,6 @@ def main():
         sys.exit(1)
 
     processador = Processador(stub)
-    print(f"CLIENTE> Ligado com perfil={perfil}, id_utilizador={id_utilizador}")
 
     try:
         while True:
