@@ -197,7 +197,10 @@ class Loja:
             cat = prod.obter_categoria()
             if cat not in cats:
                 cats.append(cat)
-        return cats, prods
+        cats_objs = []
+        for cat in cats:
+            cats_objs.append(self._categorias.get(self.obter_id_categoria(cat)))
+        return cats_objs, prods
 
     def checkout_carrinho(self, id_cliente):
         self.validar_id(id_cliente)

@@ -48,10 +48,10 @@ class Processador:
             OpCodes.ATUALIZA_PRECO: [self._cmd_atualiza_preco_produto, 2, 2],
             OpCodes.CRIA_CLIENTE: [self._cmd_cria_cliente, 0, 5], 
             OpCodes.LISTA_CLIENTES: [self._cmd_lista_clientes, 2, 0],
-            OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1, 2],
-            OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1, 1],
-            OpCodes.LISTA_CARRINHO: [self._cmd_lista_carrinho, 1, 0],
-            OpCodes.CHECKOUT_CARRINHO: [self._cmd_checkout_carrinho, 1, 0],
+            OpCodes.ADICIONA_PRODUTO_CARRINHO: [self._cmd_adiciona_produto_carrinho, 1, 3],
+            OpCodes.REMOVE_PRODUTO_CARRINHO: [self._cmd_remove_produto_carrinho, 1, 2],
+            OpCodes.LISTA_CARRINHO: [self._cmd_lista_carrinho, 1, 1],
+            OpCodes.CHECKOUT_CARRINHO: [self._cmd_checkout_carrinho, 1, 1],
             OpCodes.LISTA_ENCOMENDAS: [self._cmd_lista_encomendas, 1, 1]
         }
 
@@ -244,7 +244,7 @@ class Processador:
     def _cmd_lista_carrinho(self, args):
         id_cliente = args[0]
         categorias, produtos = self.obter_skeleton().obter_loja().lista_carrinho_cliente(id_cliente)
-        return [OpCodes.OK_LISTA_CARRINHO, categorias, produtos]
+        return [OpCodes.OK_LISTA_CARRINHO, [categorias, produtos]]
 
     def _cmd_checkout_carrinho(self, args):
         id_cliente = args[0]
