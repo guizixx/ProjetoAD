@@ -3,20 +3,20 @@ import shared.excepcoes_shared
 from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
 
 COMANDOS_VALIDOS = {
-    OpCodes.CRIA_CATEGORIA,
-    OpCodes.LISTA_CATEGORIAS,
-    OpCodes.REMOVE_CATEGORIA,
-    OpCodes.CRIA_PRODUTO,
-    OpCodes.LISTA_PRODUTOS,
-    OpCodes.AUMENTA_STOCK,
-    OpCodes.ATUALIZA_PRECO,
-    OpCodes.CRIA_CLIENTE,
-    OpCodes.LISTA_CLIENTES,
-    OpCodes.ADICIONA_PRODUTO_CARRINHO,
-    OpCodes.REMOVE_PRODUTO_CARRINHO,
-    OpCodes.LISTA_CARRINHO,
-    OpCodes.CHECKOUT_CARRINHO,
-    OpCodes.LISTA_ENCOMENDAS,
+    "CRIA_CATEGORIA": [OpCodes.CRIA_CATEGORIA, 1],
+    "LISTA_CATEGORIAS": [OpCodes.LISTA_CATEGORIAS, 0],
+    "REMOVE_CATEGORIA": [OpCodes.REMOVE_CATEGORIA, 1],
+    "CRIA_PRODUTO": [OpCodes.CRIA_PRODUTO, 4],
+    "LISTA_PRODUTOS": [OpCodes.LISTA_PRODUTOS, 0],
+    "AUMENTA_STOCK_PRODUTO": [OpCodes.AUMENTA_STOCK, 2],
+    "ATUALIZA_PRECO_PRODUTO": [OpCodes.ATUALIZA_PRECO, 2],
+    "CRIA_CLIENTE": [OpCodes.CRIA_CLIENTE, 3],
+    "LISTA_CLIENTES": [OpCodes.LISTA_CLIENTES, 0],
+    "ADICIONA_PRODUTO_CARRINHO": [OpCodes.ADICIONA_PRODUTO_CARRINHO, 2],
+    "REMOVE_PRODUTO_CARRINHO": [OpCodes.REMOVE_PRODUTO_CARRINHO, 1],
+    "LISTA_CARRINHO": [OpCodes.LISTA_CARRINHO, 0],
+    "CHECKOUT_CARRINHO": [OpCodes.CHECKOUT_CARRINHO, 0],
+    "LISTA_ENCOMENDAS": [OpCodes.LISTA_ENCOMENDAS, 1],
 }
 
 class Processador:
@@ -27,11 +27,11 @@ class Processador:
     def validar_pedido(self, comando, args):
         
         if comando not in COMANDOS_VALIDOS:
-            raise shared.excepcoes_shared.ComandoMalFormado()
+            raise shared.excepcoes_shared.ComandoMalFormado(comando)
         if len(args) != COMANDOS_VALIDOS.get(comando)[1]:
-            raise shared.excepcoes_shared.NumeroArgumentosInvalido()
+            raise shared.excepcoes_shared.NumeroArgumentosInvalido(COMANDOS_VALIDOS.get(comando)[1], len(args))
         opc = COMANDOS_VALIDOS.get(comando)[0]
-        args_norm = self.validar_args(args)
+        args_norm = self.validar_args(comando, args)
         return opc, args_norm
     
     def validar_args(self, comando, args):
@@ -165,13 +165,13 @@ class Processador:
             return f"OK; Produto {prod.nome} removido com sucesso do carrinho de compras."
  
         if opcode == OpCodes.OK_LISTA_CARRINHO:
-            categorias = resposta[1]
-            itens      = resposta[2] if len(resposta) > 2 else []
+            categorias = resposta[1][0]
+            itens = resposta[1][1]
             if not itens:
                 return "OK; Carrinho Vazio."
-            total_qtd   = sum(qtd for (_, qtd) in itens)
+            total_qtd = sum(qtd for (_, qtd) in itens)
             total_preco = sum(prod.preco * qtd for (prod, qtd) in itens)
-            cat_map     = {c.id_categoria: c for c in categorias}
+            cat_map = {c.id_categoria: c for c in categorias}
             linhas = [f"\nTotal Produtos: {len(itens)}",
                       f"Total Quantidade: {total_qtd}",
                       f"Total Preço: {total_preco:.2f} euros"]
