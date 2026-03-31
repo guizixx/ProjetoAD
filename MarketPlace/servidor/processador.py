@@ -30,9 +30,6 @@ class Processador:
     - NÃO faz validações de negócio (isso pertence à Loja / domínio)
     - traduz resultados/erros para mensagens (strings) para devolver à Camada Transporte
     - A função processar_comando() é o ponto único de entrada e é obrigatória para efeitos de avaliação.
-    - Garantir que TODAS as respostas seguem rigorosamente o protocolo:
-      "OK; <mensagem>"
-      "NOK; <mensagem>"
     """
 
     def __init__(self, pontoAcesso):

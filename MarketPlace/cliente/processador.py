@@ -88,7 +88,7 @@ class Processador:
         opcode = resposta[0]
         if 20000 <= opcode <= 30000:
             return self.formatar_ok(resposta)
-        return self.formatar_nok(resposta)
+        return self.formatar_nok_do_amigo(resposta)
     
     def formatar_ok(self, resposta):
         opcode = resposta[0]
