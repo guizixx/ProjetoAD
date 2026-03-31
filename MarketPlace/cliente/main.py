@@ -65,7 +65,7 @@ def main():
             try:
                 lista_comando = shlex.split(msg)
             except ValueError as e:
-                raise shared.excepcoes_shared.ComandoMalFormado()
+                raise shared.excepcoes_shared.ComandoMalFormado(msg)
             
             try:
                 if len(lista_comando) == 1:
@@ -80,8 +80,8 @@ def main():
                 opcode, args_normalizados = processador.validar_pedido(comando, args)
                 pedido_formatado = [opcode, args_normalizados, perfil, id_utilizador]
                 # print(f"CLIENTE> Pedido formatado: {pedido_formatado}")
-            except (SyntaxError, ValueError):
-                print("CLIENTE> Formato de pedido inválido. Exemplo de formato: [10100, [\"Fruta\"], 3, 1]")
+            except (SyntaxError, ValueError, shared.excepcoes_shared.ComandoVazio, shared.excepcoes_shared.ComandoMalFormado, shared.excepcoes_shared.NumeroArgumentosInvalido) as e:
+                print(f"CLIENTE> {e}")
                 continue
 
             try:
