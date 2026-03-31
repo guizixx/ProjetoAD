@@ -7,8 +7,10 @@ import sys
 import ast
 from  shared.socket_utilities import PontoAcesso
 from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida, ExcecaoLigacaoInterrompida
+import shared.excepcoes_shared
 from cliente.stub import Stub
 from cliente.processador import Processador
+import shlex
 
 def main():
     if len(sys.argv) != 4:
@@ -50,18 +52,33 @@ def main():
     try:
         while True:
             try:
-                pedido = input("CLIENTE> ")
+                msg = input("CLIENTE> ")
             except EOFError:
                 break
 
-            if not pedido.strip():
+            if not msg.strip():
                 continue
 
-            if pedido.strip().upper() in ("EXIT", "QUIT"):
+            if msg.strip().upper() in ("EXIT", "QUIT"):
                 break # testar como lida ao terminar com isto
 
             try:
-                pedido_formatado = ast.literal_eval(pedido)
+                lista_comando = shlex.split(msg)
+            except ValueError as e:
+                raise shared.excepcoes_shared.ComandoMalFormado()
+            
+            try:
+                if len(lista_comando) == 1:
+                    comando = lista_comando[0].upper()
+                    args = []
+                elif len(lista_comando) > 1:
+                    comando = lista_comando[0].upper()
+                    args = lista_comando[1:]
+                else: 
+                    raise shared.excepcoes_shared.ComandoVazio()
+
+                opcode, args_normalizados = processador.validar_pedido(comando, args)
+                pedido_formatado = [opcode, args_normalizados, perfil, id_utilizador]
                 # print(f"CLIENTE> Pedido formatado: {pedido_formatado}")
             except (SyntaxError, ValueError):
                 print("CLIENTE> Formato de pedido inválido. Exemplo de formato: [10100, [\"Fruta\"], 3, 1]")
