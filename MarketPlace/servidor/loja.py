@@ -14,7 +14,7 @@ from servidor.produto import Produto
 from servidor.clienteLoja import ClienteLoja
 from servidor.encomenda import Encomenda
 from datetime import datetime
-from copy import deepcopy
+from copy import deepcopy, copy
 
 class Loja:
 
@@ -191,7 +191,9 @@ class Loja:
         prods = []
         for k in carrinho.keys():
             prod = self._produtos.get(k)
-            prods.append(prod)
+            prod1 = copy(prod)
+            prod1.alterar_quantidade(carrinho.get(k))
+            prods.append(prod1)
             cat = prod.obter_categoria()
             if cat not in cats:
                 cats.append(cat)

@@ -33,5 +33,8 @@ class Produto:
     def adicionar_quantidade(self, adicionado):
         self.quantidade += adicionado
 
+    def alterar_quantidade(self, novo):
+        self.quantidade = novo
+
     def alterar_preco(self, novo):
         self.preco = round(novo, 2)
