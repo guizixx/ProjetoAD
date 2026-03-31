@@ -160,12 +160,12 @@ class Processador:
             raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
         
         categorias, produtos = self.obter_skeleton().obter_loja().lista_categorias()
-        return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
+        return [OpCodes.OK_LISTA_CATEGORIAS, [categorias, produtos]]
 
     def _cmd_remove_categoria(self, args):
         nome_categoria = normalizar_nome(args[0])
-        self.obter_skeleton().obter_loja().remover_categoria(nome_categoria)
-        return [OpCodes.OK_REMOVE_CATEGORIA, []]
+        categoria = self.obter_skeleton().obter_loja().remover_categoria(nome_categoria)
+        return [OpCodes.OK_REMOVE_CATEGORIA, [categoria]]
 
     def _cmd_cria_produto(self, args):
         nome_produto = normalizar_nome(args[0])
@@ -187,7 +187,7 @@ class Processador:
             raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
         
         categorias, produtos = self.obter_skeleton().obter_loja().listar_produtos()
-        return [OpCodes.OK_LISTA_PRODUTOS, categorias, produtos]
+        return [OpCodes.OK_LISTA_PRODUTOS, [categorias, produtos]]
 
     def _cmd_aumenta_stock_produto(self, args):
         nome_produto = normalizar_nome(args[0])
@@ -223,7 +223,7 @@ class Processador:
     def _cmd_lista_clientes(self, args):
         if len(args) != 0:
             raise shared.excepcoes_shared.ValorArgumentoInvalido("Lista de argumentos deve ser vazia.")
-        return [OpCodes.OK_LISTA_CLIENTES, self.obter_skeleton().obter_loja().listar_clientes()]
+        return [OpCodes.OK_LISTA_CLIENTES, [self.obter_skeleton().obter_loja().listar_clientes()]]
 
     def _cmd_adiciona_produto_carrinho(self, args):
         try:
@@ -254,4 +254,4 @@ class Processador:
     def _cmd_lista_encomendas(self, args):
         id_cliente = int(args[0])
         encomendas, produtos_por_encomenda = self.obter_skeleton().obter_loja().lista_encomendas(id_cliente)
-        return [OpCodes.OK_LISTA_ENCOMENDAS, encomendas, produtos_por_encomenda]
+        return [OpCodes.OK_LISTA_ENCOMENDAS, [encomendas, produtos_por_encomenda]]
