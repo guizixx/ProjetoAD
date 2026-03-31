@@ -71,9 +71,9 @@ class Loja:
         if categoria_id is None:
             raise excepcoes_shared.CategoriaNaoExiste()
         if self.obter_nr_produtos_categoria(nome) > 0:
-            raise excepcoes_shared.CategoriaComProdutos()
-        self._categorias.pop(categoria_id)
-        return self._categorias.get(categoria_id)
+            raise excepcoes_shared.CategoriaComProdutos(nome)
+        categoria = self._categorias.pop(categoria_id)
+        return categoria
     
     #-----------------------
     # Produtos
@@ -263,3 +263,8 @@ class Loja:
         f2 = ClienteLoja("f2", "f2@", "f2", 1000001, 2)
         a1 = ClienteLoja("a1", "a1@", "a1", 1000002, 3)
         a2 = ClienteLoja("a2", "a2@", "a2", 1000003, 3)
+
+        self._clientes[1000000] = f1
+        self._clientes[1000001] = f2
+        self._clientes[1000002] = a1
+        self._clientes[1000003] = a2
