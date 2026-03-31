@@ -54,6 +54,7 @@ class Processador:
     def formatar_resposta(self, resposta):
         if resposta == "SERVIDOR_ENCERROU":
             return resposta
+        print(f"CLIENTE> Resposta recebida dentro do processador: {resposta}. Tamanho: {len(resposta)}")
         if not isinstance(resposta, list) or len(resposta) != 2:
             return f"Resposta inesperada: {resposta}"
         opcode = resposta[0]
@@ -69,32 +70,33 @@ class Processador:
             return f"OK; Categoria {cat.nome} criada com sucesso."
  
         if opcode == OpCodes.OK_LISTA_CATEGORIAS:
-            categorias = resposta[1]
-            produtos   = resposta[2] if len(resposta) > 2 else []
+            categorias = resposta[1][0]
+            produtos   = resposta[1][1]
             if not categorias:
                 return "OK; Sem Categorias."
             linhas = [f"\nTotal Categorias: {len(categorias)}",
-                      f"Total Produtos: {len(produtos)}"]
+                      f"Total Produtos: {len(produtos)} \n"]
             for c in categorias:
                 n_prod = sum(1 for p in produtos if p.categoria == c.nome)
                 linhas.append(f"{c.id_categoria} - {c.nome} ({n_prod} produtos);")
             return "OK;" + "\n".join(linhas)
  
         if opcode == OpCodes.OK_REMOVE_CATEGORIA:
-            return "OK; Categoria removida com sucesso."
+            nome_categoria = resposta[1][0].nome
+            return f"OK; Categoria {nome_categoria} removida com sucesso."
  
         if opcode == OpCodes.OK_CRIA_PRODUTO:
             prod = resposta[1][0]
             return f"OK; Produto {prod.nome} criado com sucesso."
  
         if opcode == OpCodes.OK_LISTA_PRODUTOS:
-            categorias = resposta[1]
-            produtos   = resposta[2] if len(resposta) > 2 else []
+            categorias = resposta[1][0]
+            produtos   = resposta[1][1]
             if not produtos:
                 return "OK; Sem Produtos."
             total_qtd = sum(p.quantidade for p in produtos)
             linhas = [f"\nTotal Produtos: {len(produtos)}",
-                      f"Total Quantidade: {total_qtd}"]
+                      f"Total Quantidade: {total_qtd} \n"]
             for p in produtos:
                 linhas.append(
                     f"{p.id_produto} - {p.nome} ({p.categoria}, "
@@ -116,10 +118,10 @@ class Processador:
             return f"OK; Cliente criado com sucesso com identificador único {cliente.id_cliente}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
-            clientes = resposta[1]
+            clientes = resposta[1][0]
             if not clientes:
                 return "OK; Sem Clientes."
-            linhas = [f"\nTotal Clientes: {len(clientes)}"]
+            linhas = [f"\nTotal Clientes: {len(clientes)} \n"]
             for c in clientes:
                 linhas.append(f"{c.id_cliente} - {c.nome} ({c.email});")
             return "OK;" + "\n".join(linhas)
