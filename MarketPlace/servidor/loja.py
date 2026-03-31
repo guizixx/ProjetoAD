@@ -83,7 +83,7 @@ class Loja:
             if nome_produto == p.obter_nome():
                 raise excepcoes_shared.ProdutoJaExiste()
         if self.obter_id_categoria(nome_categoria) is None:
-            raise excepcoes_shared.CategoriaNaoExiste()
+            raise excepcoes_shared.CategoriaNaoExiste(nome_categoria)
         if preco <= 0:
             raise excepcoes_shared.PrecoInvalido()
         if quantidade < 0:

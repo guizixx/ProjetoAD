@@ -1,3 +1,10 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260
+# Tiago Telha - nº 60261
+# Descrição: Processador do cliente - valida os argumentos passados pelo utilizador e transforma o comando num pedido formatado, chama o Stub 
+#            para enviar/receber, e formata a resposta
+#            para apresentar ao utilizador.
+
 from shared.excepcoes_shared import OpCodes
 import shared.excepcoes_shared
 from cliente.ClassesReduzidas import ClienteLoja, Encomenda, Produto, Categoria
@@ -88,7 +95,7 @@ class Processador:
         opcode = resposta[0]
         if 20000 <= opcode <= 30000:
             return self.formatar_ok(resposta)
-        return self.formatar_nok_do_amigo(resposta)
+        return self.formatar_nok(resposta)
     
     def formatar_ok(self, resposta):
         opcode = resposta[0]
@@ -107,7 +114,7 @@ class Processador:
             for c in categorias:
                 n_prod = sum(1 for p in produtos if p.categoria == c.nome)
                 linhas.append(f"{c.id_categoria} - {c.nome} ({n_prod} produtos);")
-            return "".join(linhas)
+            return "\n".join(linhas)
  
         if opcode == OpCodes.OK_REMOVE_CATEGORIA:
             nome_categoria = resposta[1][0].nome
@@ -130,7 +137,7 @@ class Processador:
                     f"{p.id_produto} - {p.nome} ({p.categoria}, "
                     f"{p.preco:.2f} euros, {p.quantidade} unidades);"
                 )
-            return "".join(linhas)
+            return "\n".join(linhas)
  
         if opcode == OpCodes.OK_AUMENTA_STOCK:
             prod = resposta[1][0]
@@ -149,10 +156,10 @@ class Processador:
             clientes = resposta[1][0]
             if not clientes:
                 return "Sem Clientes."
-            linhas = [f"\nTotal Clientes: {len(clientes)} \n"]
+            linhas = [f"Total Clientes: {len(clientes)} \n"]
             for c in clientes:
-                linhas.append(f"{c.obter_cliente()} - {c.obter_nome()} ({c.obter_email()});")
-            return "".join(linhas)
+                linhas.append(f"{c.obter_id()} - {c.obter_nome()} ({c.obter_email()});")
+            return "\n".join(linhas)
  
         if opcode == OpCodes.OK_ADICIONA_CARRINHO:
             prod = resposta[1][0]
@@ -181,7 +188,7 @@ class Processador:
                     f"{prod.obter_id()} - {prod.obter_nome()} ({cat_str}, "
                     f"{prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
-            return "".join(linhas)
+            return "\n".join(linhas)
  
         if opcode == OpCodes.OK_CHECKOUT:
             return ("Checkout de carrinho de compras efetuado com sucesso. "
@@ -195,14 +202,14 @@ class Processador:
  
         return f"{resposta[1]}"
 
-    def formatar_nok(self, resposta):
-        opcode = resposta[0]
-        if len(resposta) > 1:
-            detalhe = resposta[1]
-        else:
-            detalhe = []
+    # def formatar_nok(self, resposta):
+    #     opcode = resposta[0]
+    #     if len(resposta) > 1:
+    #         detalhe = resposta[1]
+    #     else:
+    #         detalhe = []
         
-        return f"Erro {opcode}: {detalhe}"
+    #     return f"Erro {opcode}: {detalhe}"
     
     def formatar_lista_encomendas(self, resposta):
         encomendas = resposta[1][0]
@@ -260,24 +267,19 @@ class Processador:
             "\n",
         ] + linhas_encomendas
  
-        return "".join(linhas)
+        return "\n".join(linhas)
 
     
-    # Para basear na lógica de manter os detalhes já mandados pelo servidor
-    def formatar_nok_do_amigo(self, resposta):
+    def formatar_nok(self, resposta):
         opcode = resposta[0]
         detalhe = resposta[1] if len(resposta) > 1 else []
 
-        # 1) Se o servidor já enviou uma mensagem humana, reutiliza-a.
         if isinstance(detalhe, list) and detalhe:
-            # Normalmente é [str(e)]
             msg = detalhe[0]
             if isinstance(msg, str) and msg.strip():
                 return f"{msg}"
 
-        # 2) Caso contrário, traduz por opcode (para casos em que o servidor envia []).
         mensagens = {
-            # --------- 39xxx (protocolo/validação/autorização/execução) ----------
             OpCodes.ERRO_GENERICO: "Erro genérico.",
             OpCodes.OP_CODE_INVALIDO: "Op_code inválido.",
             OpCodes.MENSAGEM_MAL_FORMADA: "Mensagem mal formada.",
@@ -297,7 +299,6 @@ class Processador:
             OpCodes.UTILIZADOR_NAO_AUTENTICADO: "Utilizador não autenticado.",
             OpCodes.ERRO_INTERNO_SERVIDOR: "Erro interno do servidor.",
 
-            # --------- 3xxxx (negócio) ----------
             OpCodes.CATEGORIA_JA_EXISTE: "A categoria já existe.",
             OpCodes.CATEGORIA_NAO_EXISTE: "A categoria não existe.",
             OpCodes.CATEGORIA_COM_PRODUTOS: "A categoria tem produtos associados com stock.",
@@ -338,6 +339,6 @@ class Processador:
         }
 
         msg = mensagens.get(opcode)
-        return f"{opcode}{msg}"
+        return f"{opcode} {msg}"
     
 

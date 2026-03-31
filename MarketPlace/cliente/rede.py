@@ -1,7 +1,8 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Camada de transporte TCP do cliente - conecta ao servidor e move strings
+# Descrição: Camada de transporte TCP do cliente - conecta ao servidor e move bytes.
+#            Não interpreta conteúdo - apenas lida com sockets.
 
 import socket
 from shared.socket_utilities import PontoAcesso, receive_all
@@ -9,12 +10,6 @@ from shared import excepcoes_shared
 import struct
 
 class TCPSocketCliente:
-    """
-    Camada Transporte:
-    - move strings 
-    - não conhece regras de negócio
-    - não interpreta comandos
-    """
 
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso

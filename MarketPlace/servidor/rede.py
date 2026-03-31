@@ -1,7 +1,8 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Camada de transporte TCP do servidor - aceita ligações e move strings
+# Descrição: Camada de transporte TCP do servidor - aceita ligações e move bytes.
+#            Não interpreta conteúdo - apenas lida com sockets.
 
 import socket
 import struct
@@ -10,13 +11,6 @@ from shared import excepcoes_shared
 import struct
 # ver se a classe continua a ser TCPSocketserver ou Rede
 class TCPSocketServidor:
-    """
-    Camada Transporte:
-    - não interpreta comandos
-    - não chama Loja
-    - não faz validações de negócio
-    - só move strings
-    """
 
     def __init__(self, ponto_acesso):
         self.ponto_acesso = ponto_acesso

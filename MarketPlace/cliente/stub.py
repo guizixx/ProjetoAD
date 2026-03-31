@@ -1,8 +1,14 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260
+# Tiago Telha - nº 60261
+# Descrição: Stub - camada de comunicação do cliente.
+#            Simétrico ao Skeleton: serializa pedidos com pickle e envia com prefixo
+#            de tamanho; recebe bytes e desserializa a resposta. Não interpreta conteúdo.
+
 from cliente.rede import TCPSocketCliente
 from shared import excepcoes_shared
 import pickle, struct
 
-# copiado da pl3, adaptar o que for necessario
 class Stub:
 
     def __init__(self, ponto_acesso):
@@ -26,7 +32,6 @@ class Stub:
             self.obter_rede().envia(bytes)
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
-        print("Estou a enviar", pedido)
 
     def recebe(self): 
         try:

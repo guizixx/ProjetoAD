@@ -1,4 +1,9 @@
-
+# Grupo: 47
+# Guilherme Pinto - nº 60260
+# Tiago Telha - nº 60261
+# Descrição: Classes reduzidas do lado do cliente, necessárias para o pickle conseguir
+#            desserializar os objectos que chegam do servidor.
+#            Contêm apenas os atributos - sem lógica de negócio.
 
 class ClienteLoja:
 

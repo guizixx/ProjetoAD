@@ -1,7 +1,9 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Ponto de entrada do servidor - inicializa socket TCP e aguarda clientes
+# Descrição: Ponto de entrada do servidor. Gere o ciclo select() com múltiplos
+#            clientes simultâneos e ligações persistentes. Usa o Skeleton para
+#            comunicação e o Processador para lógica de dispatch.
 
 import sys
 import select as sel

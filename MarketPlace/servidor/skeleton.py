@@ -1,3 +1,10 @@
+# Grupo: 47
+# Guilherme Pinto - nº 60260
+# Tiago Telha - nº 60261
+# Descrição: Skeleton - camada de comunicação do servidor.
+#            Responsável por receber bytes da rede, desserializar com pickle,
+#            e serializar + enviar as respostas. Não interpreta comandos.
+
 from servidor.rede import TCPSocketServidor
 import pickle, struct
 from shared.socket_utilities import PontoAcesso

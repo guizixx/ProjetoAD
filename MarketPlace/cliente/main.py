@@ -1,7 +1,8 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Ponto de entrada do cliente - lê comandos do utilizador e comunica com o servidor
+# Descrição: Ponto de entrada do cliente - lê perfil e id_utilizador no arranque,
+#            e delega toda a lógica ao ProcessadorCliente.
 
 import sys
 import ast

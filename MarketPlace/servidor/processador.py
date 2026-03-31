@@ -2,7 +2,7 @@
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
 # Descrição: Camada processador interpreta os comandos do cliente e faz validação de argumentos,
-#            antes de chamar a loja para executar a lógica de negócio e formar as respostas necessárias
+#            antes de chamar a loja (via skeleton) para executar a lógica de negócio e formar as respostas necessárias
 
 from servidor.excepcoes import ExcepcaoComandoInvalido
 from servidor.excepcoes import ExcepcaoComandoDesconhecido
@@ -17,19 +17,16 @@ import shlex
 from servidor.loja import Loja
 from shared.utilities import normalizar_nome
 
-# alterar tudo o que envolve o novo protocolo de mnsgs
-#   -validaçao, estruturaçao, divisao e processamento
 
 class Processador:
 
     """
     Camada Processador:
-    - interpreta comandos (parsing e dispatch)
-    - valida sintaxe e número/tipo básico de argumentos (ex.: quantos args vieram)
-    - chama a Loja para executar a lógica de negócio
-    - NÃO faz validações de negócio (isso pertence à Loja / domínio)
-    - traduz resultados/erros para mensagens (strings) para devolver à Camada Transporte
-    - A função processar_comando() é o ponto único de entrada e é obrigatória para efeitos de avaliação.
+    - recebe a lista desserializada vinda do Skeleton
+    - valida estrutura, permissões e número de argumentos
+    - faz dispatch para o handler correcto
+    - acede à Loja via Skeleton para executar a lógica de negócio
+    - devolve uma lista de resposta ao main.py
     """
 
     def __init__(self, pontoAcesso):
