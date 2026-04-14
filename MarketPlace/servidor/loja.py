@@ -251,13 +251,14 @@ class Loja:
     #-----------------
     def validar_utilizador(self, perfil, utilizador, operacao):
         # print("OPCODE dentro de validar_utilizador da loja: ", operacao)
-        if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE) & (utilizador not in self._clientes.keys()):
+        if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE):
             raise excepcoes_shared.UtilizadorInvalido()
         
         if (operacao != excepcoes_shared.OpCodes.CRIA_CLIENTE) and (self._clientes.get(utilizador).obter_permissao() != perfil):
             raise excepcoes_shared.OperacaoNaoAutorizada()
         
     def validar_id(self, id_cliente):
+        return True
         if id_cliente not in self._clientes.keys():
             raise excepcoes_shared.UtilizadorInvalido()
         

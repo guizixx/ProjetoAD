@@ -79,7 +79,7 @@ def main():
 
                 opcode, args_normalizados = processador.validar_pedido(comando, args)
                 pedido_formatado = [opcode, args_normalizados, perfil, id_utilizador]
-                print(f"Pedido: {pedido_formatado}")
+                # print(f"Pedido: {pedido_formatado}")
             except (SyntaxError, ValueError, shared.excepcoes_shared.ComandoVazio, shared.excepcoes_shared.ComandoMalFormado, shared.excepcoes_shared.NumeroArgumentosInvalido) as e:
                 print(f"CLIENTE> {e}")
                 continue
@@ -89,6 +89,12 @@ def main():
                 if resultado == "SERVIDOR_ENCERROU":
                     print("CLIENTE> O servidor encerrou a ligação.")
                     break
+                
+                if "Cliente criado com sucesso com identificador único" in resultado:
+                    perfil = 1 # atualizar perfil para cliente após criação bem-sucedida
+                    print(f"CLIENTE> Perfil atualizado para cliente {perfil} após criação bem-sucedida")
+
+
                 print(resultado)
             except ValueError as e:
                 print(f"CLIENTE> {e}")

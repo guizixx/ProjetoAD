@@ -36,8 +36,11 @@ class Processador:
         
         if comando not in COMANDOS_VALIDOS:
             raise shared.excepcoes_shared.ComandoMalFormado(comando)
-        if len(args) != COMANDOS_VALIDOS.get(comando)[1]:
-            raise shared.excepcoes_shared.NumeroArgumentosInvalido(COMANDOS_VALIDOS.get(comando)[1], len(args))
+        
+        if comando != "LISTA_ENCOMENDAS":
+            if len(args) != COMANDOS_VALIDOS.get(comando)[1]:
+                raise shared.excepcoes_shared.NumeroArgumentosInvalido(COMANDOS_VALIDOS.get(comando)[1], len(args))
+            
         opc = COMANDOS_VALIDOS.get(comando)[0]
         args_norm = self.validar_args(comando, args)
         return opc, args_norm
@@ -72,13 +75,6 @@ class Processador:
             except shared.excepcoes_shared.TipoArgumentoInvalido as e:
                 raise e
             args[1] = qtd
-
-        elif comando == "LISTA_ENCOMENDAS":
-            try:
-                id = args[0]
-            except shared.excepcoes_shared.TipoArgumentoInvalido as e:
-                raise e
-            args[0] = id
 
         return args
 
