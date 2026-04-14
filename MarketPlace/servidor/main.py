@@ -31,16 +31,10 @@ def main():
 
     lista_sockets = [sock_escuta, sys.stdin]
 
-    #print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
-
-    # adição de admins e funcionários fictícios
-    #      2 funcionários     2 admins
-    # ids: 1000000, 1000001 | 1000002, 1000003
-    processador.obter_skeleton().obter_loja().criar_funcionarios()
+    print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
 
     running = True
     while running:
-        # print("Lista de sockets ativos: ", lista_sockets)
         R, W, X = sel.select(lista_sockets, [], []) # Espera sockets
 
         for sckt in R:
@@ -97,7 +91,6 @@ def main():
                         shared.excepcoes_shared.ExcepcaoValidacao) as e:
                     resposta = [e.code, [str(e)]]
                 except Exception as e:
-                    #print("E dentro do main: ", e)
                     resposta = [shared.excepcoes_shared.OpCodes.ERRO_INTERNO_SERVIDOR, [str(e)]]
 
                 try:

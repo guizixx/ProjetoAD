@@ -145,7 +145,6 @@ class Processador:
  
         if opcode == OpCodes.OK_CRIA_CLIENTE:
             cliente = resposta[1][0]
-            # print("Resposta do criar cliente: ", resposta[1][0])
             return f"Cliente criado com sucesso com identificador único {cliente.obter_id()}."
  
         if opcode == OpCodes.OK_LISTA_CLIENTES:
@@ -197,15 +196,6 @@ class Processador:
             return 
  
         return f"{resposta[1]}"
-
-    # def formatar_nok(self, resposta):
-    #     opcode = resposta[0]
-    #     if len(resposta) > 1:
-    #         detalhe = resposta[1]
-    #     else:
-    #         detalhe = []
-        
-    #     return f"Erro {opcode}: {detalhe}"
     
     def formatar_lista_encomendas(self, resposta):
         encomendas = resposta[1][0]
@@ -335,6 +325,6 @@ class Processador:
         }
 
         msg = mensagens.get(opcode)
-        return f"{opcode} {msg}"
+        return f"{msg}"
     
 

@@ -88,15 +88,12 @@ class Processador:
     def _validar_n_args(self, args, n, opcode):
         if opcode in {OpCodes.LISTA_ENCOMENDAS}:
             if len(args) == 0 or len(args) == 1:
-                print("Dentro do validar args da lista encomendas.")
                 return True
 
         if len(args) != n:
-            print("Dentro do validar args geral.")
             raise ExcepcaoComandoNumeroArgumentosIncorreto(n, len(args))
         
     def _validar_permissao(self, perfil, operacao):
-        # print("OPCODE dentro de validar_permissao do processador: ", operacao)
         if self.HANDLERS[operacao][1] > perfil:
             raise shared.excepcoes_shared.OperacaoNaoAutorizada()
         
@@ -117,7 +114,6 @@ class Processador:
             #print(f"SERVIDOR> Comando dividido: opcode={opcode}, args={args}, perfil={perfil}, utilizador={utilizador}")
             self._validar_permissao(perfil, opcode)
             print("Depois de validar permissao no processar_comando")
-            # self._validar_utilizador(perfil, utilizador, opcode)
             handler = self._obter_handler(opcode)
 
             # os handlers das ações de gestão de carrinho precisam do id_utilizador
