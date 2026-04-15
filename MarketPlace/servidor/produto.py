@@ -13,6 +13,7 @@ class Produto:
         self.categoria = categoria
         self.preco = round(preco, 2)
         self.quantidade = quantidade
+        self.quantidade_aumentada = 0
         Produto._contador_global += 1
 
     def obter_id(self):
@@ -30,8 +31,12 @@ class Produto:
     def obter_quantidade(self):
         return self.quantidade
     
+    def obter_quantidade_aumentada(self):
+        return self.quantidade_aumentada
+    
     def adicionar_quantidade(self, adicionado):
         self.quantidade += adicionado
+        self.quantidade_aumentada = adicionado
 
     def alterar_quantidade(self, novo):
         self.quantidade = novo

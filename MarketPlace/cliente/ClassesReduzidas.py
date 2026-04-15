@@ -34,6 +34,7 @@ class Produto:
         self.categoria = categoria
         self.preco = round(preco, 2)
         self.quantidade = quantidade
+        self.quantidade_aumentada = 0
         Produto._contador_global += 1
 
 class Categoria:

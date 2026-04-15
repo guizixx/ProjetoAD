@@ -105,7 +105,7 @@ class Processador:
             produtos   = resposta[1][1]
             if not categorias:
                 return "Sem Categorias."
-            linhas = [f"\nTotal Categorias: {len(categorias)}",
+            linhas = [f"Total Categorias: {len(categorias)}",
                       f"Total Produtos: {len(produtos)} \n"]
             for c in categorias:
                 n_prod = sum(1 for p in produtos if p.categoria == c.nome)
@@ -126,7 +126,7 @@ class Processador:
             if not produtos:
                 return "Sem Produtos."
             total_qtd = sum(p.quantidade for p in produtos)
-            linhas = [f"\nTotal Produtos: {len(produtos)}",
+            linhas = [f"Total Produtos: {len(produtos)}",
                       f"Total Quantidade: {total_qtd} \n"]
             for p in produtos:
                 linhas.append(
@@ -137,7 +137,7 @@ class Processador:
  
         if opcode == OpCodes.OK_AUMENTA_STOCK:
             prod = resposta[1][0]
-            return f"Stock do produto {prod.obter_nome()} aumentado com sucesso."
+            return f"Stock do produto {prod.obter_nome()} aumentado em {prod.obter_quantidade_aumentada()} unidades com sucesso."
  
         if opcode == OpCodes.OK_ATUALIZA_PRECO:
             prod = resposta[1][0]
@@ -154,7 +154,7 @@ class Processador:
             linhas = [f"Total Clientes: {len(clientes)} \n"]
             for c in clientes:
                 linhas.append(f"{c.obter_id()} - {c.obter_nome()} ({c.obter_email()});")
-            return "\n".join(linhas)
+            return "".join(linhas)
  
         if opcode == OpCodes.OK_ADICIONA_CARRINHO:
             prod = resposta[1][0]
@@ -172,7 +172,7 @@ class Processador:
             total_qtd = sum(prod.obter_quantidade() for prod in itens)
             total_preco = sum(prod.obter_preco() * prod.obter_quantidade() for prod in itens)
             cat_map = {c.obter_nome(): c for c in categorias}
-            linhas = [f"\nTotal Produtos: {len(itens)}",
+            linhas = [f"Total Produtos: {len(itens)}",
                       f"Total Quantidade: {total_qtd}",
                       f"Total Preço: {total_preco:.2f} euros \n"]
             for prod in itens:
@@ -225,12 +225,12 @@ class Processador:
                     f"({prod.obter_categoria()}, {prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
             linhas_encomendas += [
-                f"ID Encomenda: {enc.obter_id()}",
+                f"\nID Encomenda: {enc.obter_id()}",
                 f"Data Encomenda: {enc.obter_data()}",
                 f"Total Produtos: {len(itens)}",
                 f"Total Quantidade: {total_qtd_enc}",
                 f"Total Preço: {enc.obter_total():.2f} euros\n",
-            ] + linhas_prods + ["\n"]
+            ] + linhas_prods
  
         cats_ord = sorted(cat_quantidades.items(), key=itemgetter(1), reverse=True)
         top = []
@@ -246,11 +246,10 @@ class Processador:
             cat_top_str = ""
  
         linhas = [
-            f"\nTotal Encomendas: {len(encomendas)}",
+            f"Total Encomendas: {len(encomendas)}",
             f"Total Produtos: {len(ids_produtos_vistos)}",
             f"Total Preço: {total_preco_geral} euros",
             cat_top_str,
-            "\n",
         ] + linhas_encomendas
  
         return "\n".join(linhas)
