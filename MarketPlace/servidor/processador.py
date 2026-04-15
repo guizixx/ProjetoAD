@@ -113,6 +113,7 @@ class Processador:
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
             #print(f"SERVIDOR> Comando dividido: opcode={opcode}, args={args}, perfil={perfil}, utilizador={utilizador}")
             self._validar_permissao(perfil, opcode)
+            self.skeleton.obter_loja().verificar_perfil1(perfil, utilizador)
             print("Depois de validar permissao no processar_comando")
             handler = self._obter_handler(opcode)
 
@@ -209,6 +210,10 @@ class Processador:
         pw = args[2]
         id_cliente = args[3]
         permissao = args[4]
+
+        if permissao != 0:
+            raise shared.excepcoes_shared.OperacaoNaoAutorizada()
+        
         if '@' not in email:
             raise shared.excepcoes_shared.EmailInvalido()
 
@@ -224,7 +229,7 @@ class Processador:
         perfil = args[-1]
         if perfil == 2 or perfil == 3:
             raise shared.excepcoes_shared.OperacaoNaoAutorizada("Funcionários e administradores não podem ter carrinho de compras.")
-        
+
         try:
             quantidade = int(args[1])
         except ValueError:

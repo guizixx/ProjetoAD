@@ -36,6 +36,13 @@ class Loja:
         self._encomendas = {}
         # TODO: MUITO IMPORTANTE Completar esta funcao para Testes Unitários puderem executar sem problemas
 
+    def verificar_perfil1(self, perfil, id_utilizador):
+        if perfil == 1 and id_utilizador not in self._clientes.keys():
+            email = str(id_utilizador) + "@"
+            cliente = ClienteLoja("", email, "", id_utilizador, perfil)
+            print(f"Cliente criado de perfil 1: {cliente}")
+            self._clientes[id_utilizador] = cliente
+
     # -----------------------------
     # Categorias
     # -----------------------------
