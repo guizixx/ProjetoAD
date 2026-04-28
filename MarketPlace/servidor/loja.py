@@ -252,6 +252,47 @@ class Loja:
 
         return encomendas_cliente, produtos_por_encomenda
     
+    #-----------------
+    # Sincronização de estado
+    #-----------------
+
+    def exportar_estado(self):
+        """
+        Devolve um dicionário com uma cópia completa do estado da loja,
+        incluindo os contadores globais das classes de domínio.
+
+        Usado quando um novo servidor entra na cadeia e pede o estado ao antecessor.
+        """
+        
+        estado = {
+            "categorias": dict(self._categorias),
+            "produtos": dict(self._produtos),
+            "clientes": dict(self._clientes),
+            "encomendas": dict(self._encomendas)
+            "contador_categoria": Categoria._contador_global,
+            "contador_produto": Produto._contador_global,
+            "contador_encomenda": Encomenda._contador_global,
+        }
+        
+        return estado
+
+    def importar_estado(self, estado):
+        """
+        Substitui o estado atual da loja pelo estado recebido do antecessor.
+        Restaura também os contadores globais para evitar problemas de IDs.
+        """
+
+        #TODO: Secalhar fica mais limpo se isto for feito com um for pelas keys do estado
+        self._categorias = estado.get("categorias", {})
+        self._produtos = estado.get("produtos", {})
+        self._clientes = estado.get("clientes", {})
+        self._encomendas = estado.get("encomendas", {})
+
+        Categoria._contador_global = estado.get("contador_categoria", 1)
+        Produto._contador_global = estado.get("contador_produto", 1)
+        Encomenda._contador_global = estado.get("contador_encomenda", 1)
+
+        #TODO: Fazer print do estado importado
 
     #-----------------
     # AUXILIARES
