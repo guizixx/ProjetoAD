@@ -55,6 +55,26 @@ class Skeleton:
         print(f"SERVIDOR> Comando recebido: {msg}")
         return msg
 
+    def enviar_estado(self, sock, loja):
+        """
+        Serializa o estado completo da loja e envia-o para o socket indicado (servidor a seguir na cadeia)
+
+        Possivelmente isto é redundante, porque secalhar pode-se só utilizar o envia() normal e fazemos a exportação do estado antes de chamar o envia().
+        """
+
+        try:
+            estado = loja.exportar_estado()
+            dados =  pickle.dumps(estado, protocol=pickle.HIGHEST_PROTOCOL)
+            tamanho = struct.pack('!I', len(dados))
+        except Exception:
+            raise excepcoes_shared.ExcecaoSerializacaoInvalida()
+            print("SERVIDOR> Estado da loja enviado com sucesso.")
+        try:
+            self.obter_rede.envia(sock, tamanho, bytes)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
+
+
     def close(self): 
         self.obter_rede().close()
 
