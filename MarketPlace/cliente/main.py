@@ -12,18 +12,14 @@ import shared.excepcoes_shared
 from cliente.stub import Stub
 from cliente.processador import Processador
 import shlex
+from clienteZookeeper import ZookeeperCliente
+
+# o ip:port passado pelo user passa a ser o ip:port do zookeeper
 
 def main():
     if len(sys.argv) != 4:
         print("CLIENTE> Uso: python -m cliente.main <porto> <id_perfil> <id_utilizador>")
         sys.exit(1)
-
-    try: 
-        # valida endereco_ip e porto (se erro ExcepcaoIPInvalido ou ExcepcaoPortoInvalido)
-        ponto_acesso = PontoAcesso(endereco_ip = 'localhost', porto = sys.argv[1])
-    except ExcepcaoConfiguracaoInvalida  as e: 
-        print("CLIENTE>", e)
-        sys.exit(1) 
 
     try:
         perfil = int(sys.argv[2])
@@ -39,6 +35,22 @@ def main():
     if id_utilizador < 0:
         print("CLIENTE> id_utilizador deve ser um inteiro não negativo.")
         sys.exit(1)
+
+
+    cliente_zk = ZookeeperCliente('localhost:' +sys.argv[1])
+    cliente_zk.ligar()
+    cliente_zk.obter_head_e_tail()
+    head = cliente_zk.obter_head()
+    head_ix = head.index(":")
+    head_ip = head[:head_ix]
+    head_port = head[head_ix:]
+
+    try: 
+        # valida endereco_ip e porto (se erro ExcepcaoIPInvalido ou ExcepcaoPortoInvalido)
+        ponto_acesso = PontoAcesso(endereco_ip = head_ip, porto = head_port)
+    except ExcepcaoConfiguracaoInvalida  as e: 
+        print("CLIENTE>", e)
+        sys.exit(1) 
 
     stub = Stub(ponto_acesso)
     try:
