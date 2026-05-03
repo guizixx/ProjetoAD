@@ -18,6 +18,8 @@ from clienteZookeeper import ZookeeperCliente
 
 def main():
     if len(sys.argv) != 4:
+        # ver enunciado para alterar
+        # em principio só se passa a localizaçao do zookeeper
         print("CLIENTE> Uso: python -m cliente.main <porto> <id_perfil> <id_utilizador>")
         sys.exit(1)
 
@@ -36,23 +38,33 @@ def main():
         print("CLIENTE> id_utilizador deve ser um inteiro não negativo.")
         sys.exit(1)
 
+    # alterar para o argumento passado em caso de nao ser o sys.argv[1]
+    cliente_zk = ZookeeperCliente(sys.argv[1])
 
-    cliente_zk = ZookeeperCliente('localhost:' +sys.argv[1])
     cliente_zk.ligar()
     cliente_zk.obter_head_e_tail()
-    head = cliente_zk.obter_head()
-    head_ix = head.index(":")
-    head_ip = head[:head_ix]
-    head_port = head[head_ix:]
 
+    # obter localizaçao head
+    endereco_head = cliente_zk.obter_head()
+    head_sep_ix = endereco_head.index(":")
+    head_ip = endereco_head[:head_sep_ix]
+    head_port = endereco_head[head_sep_ix:]
+
+    # obter localizaçao tail
+    endereco_tail = cliente_zk.obter_head()
+    tail_sep_ix = endereco_tail.index(":")
+    tail_ip = endereco_tail[:head_sep_ix]
+    tail_port = endereco_tail[head_sep_ix:]
+    
     try: 
         # valida endereco_ip e porto (se erro ExcepcaoIPInvalido ou ExcepcaoPortoInvalido)
-        ponto_acesso = PontoAcesso(endereco_ip = head_ip, porto = head_port)
+        ponto_acesso_w = PontoAcesso(endereco_ip = head_ip, porto = head_port)
+        ponto_acesso_r = PontoAcesso(endereco_ip = tail_ip, porto = tail_port)
     except ExcepcaoConfiguracaoInvalida  as e: 
         print("CLIENTE>", e)
         sys.exit(1) 
 
-    stub = Stub(ponto_acesso)
+    stub = Stub(ponto_acesso_w, ponto_acesso_r)
     try:
         stub.ligar()
     except OSError as e:
