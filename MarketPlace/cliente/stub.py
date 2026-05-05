@@ -11,9 +11,9 @@ import pickle, struct
 
 class Stub:
 
-    def __init__(self, ponto_acesso_W, ponto_acesso_R, cert_ficheiro, key_ficheiro, ca_ficheiro):
-        self.redeW = TCPSocketCliente(ponto_acesso_W, cert_ficheiro, key_ficheiro, ca_ficheiro)
-        self.redeR = TCPSocketCliente(ponto_acesso_R, cert_ficheiro, key_ficheiro, ca_ficheiro)
+    def __init__(self, ponto_acesso_W, ponto_acesso_R, ca_ficheiro):
+        self.redeW = TCPSocketCliente(ponto_acesso_W, ca_ficheiro)
+        self.redeR = TCPSocketCliente(ponto_acesso_R, ca_ficheiro)
 
     def obter_rede_w(self):
         return self.redeW

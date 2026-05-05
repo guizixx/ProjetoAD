@@ -12,23 +12,21 @@ import ssl
 
 class TCPSocketCliente:
 
-    def __init__(self, ponto_acesso, cert_ficheiro, key_ficheiro, ca_ficheiro):
+    def __init__(self, ponto_acesso, ca_ficheiro):
         """
         cert_ficheiro: caminho para o certificado SSL
         key_ficheiro: caminho para a chave privada SSL
         ca_ficheiro: caminho para a autoridade certificadora
         """
         self.ponto_acesso = ponto_acesso
-        self.cert_ficheiro = cert_ficheiro
-        self.key_ficheiro = key_ficheiro
+        self.ca_ficheiro = ca_ficheiro
 
         sock_pre_ssl = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if cert_ficheiro is not None and key_ficheiro is not None:
+        if ca_ficheiro is not None:
             context = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
             context.verify_mode = ssl.CERT_REQUIRED
             context.check_hostname = True
             context.load_verify_locations(cafile= ca_ficheiro)
-            context.load_cert_chain(certfile= cert_ficheiro, keyfile= key_ficheiro)
             HOST = 'localhost'
             self.socket_cliente = context.wrap_socket(sock_pre_ssl, server_hostname=HOST)
         else:

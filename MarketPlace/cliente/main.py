@@ -64,11 +64,9 @@ def main():
         print("CLIENTE>", e)
         sys.exit(1) 
 
-    cert_ficheiro = 'cli.crt'
-    key_ficheiro = 'cli.key'
     ca_ficheiro = 'root.pem'
 
-    stub = Stub(ponto_acesso_w, ponto_acesso_r, cert_ficheiro, key_ficheiro, ca_ficheiro)
+    stub = Stub(ponto_acesso_w, ponto_acesso_r, ca_ficheiro)
     try:
         stub.ligar()
     except OSError as e:
