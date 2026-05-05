@@ -53,8 +53,8 @@ def main():
     # obter localizaçao tail
     endereco_tail = cliente_zk.obter_head()
     tail_sep_ix = endereco_tail.index(":")
-    tail_ip = endereco_tail[:head_sep_ix]
-    tail_port = endereco_tail[head_sep_ix:]
+    tail_ip = endereco_tail[:tail_sep_ix]
+    tail_port = endereco_tail[tail_sep_ix:]
     
     try: 
         # valida endereco_ip e porto (se erro ExcepcaoIPInvalido ou ExcepcaoPortoInvalido)
@@ -64,7 +64,11 @@ def main():
         print("CLIENTE>", e)
         sys.exit(1) 
 
-    stub = Stub(ponto_acesso_w, ponto_acesso_r)
+    cert_ficheiro = 'cli.crt'
+    key_ficheiro = 'cli.key'
+    ca_ficheiro = 'root.pem'
+
+    stub = Stub(ponto_acesso_w, ponto_acesso_r, cert_ficheiro, key_ficheiro, ca_ficheiro)
     try:
         stub.ligar()
     except OSError as e:
