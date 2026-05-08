@@ -13,12 +13,14 @@ import struct
 
 class TCPSocketServidor:
 
-    def __init__(self, ponto_acesso, cert_ficheiro, key_ficheiro):
+    def __init__(self, ponto_acesso, ca_ficheiro, cert_ficheiro, key_ficheiro):
         """
+        ca_ficheiro: caminho para o certificado CA
         cert_ficheiro: caminho para o certificado SSL
         key_ficheiro: caminho para a chave privada SSL
         """
         self.ponto_acesso = ponto_acesso
+        self.ca_ficheiro = ca_ficheiro
         self.cert_ficheiro = cert_ficheiro
         self.key_ficheiro = key_ficheiro
 
@@ -29,7 +31,9 @@ class TCPSocketServidor:
         
         if self.cert_ficheiro is not None and self.key_ficheiro is not None:
             contexto = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            contexto.load_cert_chain(certfile=cert_ficheiro, keyfile=key_ficheiro)
+            contexto.verify_mode = ssl.CERT_REQUIRED
+            contexto.load_verify_locations(cafile=self.ca_ficheiro)
+            contexto.load_cert_chain(certfile=self.cert_ficheiro, keyfile=self.key_ficheiro)
             self.socket_servidor = contexto.wrap_socket(sock_antes_ssl, server_side=True)
             print(f"SERVIDOR> A escutar com SSL em \n {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
         else:
@@ -89,7 +93,10 @@ class TCPSocketServidor:
 
             if ca_ficheiro is not None:
                 contexto = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-                contexto.load_verify_locations(ca_ficheiro)
+                contexto.verify_mode = ssl.CERT_REQUIRED
+                contexto.check_hostname = True
+                contexto.load_verify_locations(cafile=self.ca_ficheiro)
+                contexto.load_cert_chain(certfile=self.cert_ficheiro, keyfile=self.key_ficheiro)
                 sock = contexto.wrap_socket(sock_saida, server_hostname=ip)
             else:
                 sock = sock_saida
