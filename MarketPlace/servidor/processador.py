@@ -138,8 +138,8 @@ class Processador:
         lock = self.zk_servidor.obter_lock_escrita()
         with lock:
             try:
-                self.obter_skeleton().envia(sock_sucessor, comando)
-                resposta = self.obter_skeleton().recebe(sock_sucessor)
+                self.envia(sock_sucessor, comando)
+                resposta = self.recebe(sock_sucessor)
                 return resposta
             except Exception as e:
                 print(f"SERVIDOR> Falha ao propagar escrita ao sucessor: {e}")
