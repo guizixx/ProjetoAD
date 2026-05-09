@@ -1,13 +1,17 @@
 # Grupo: 47
 # Guilherme Pinto - nº 60260 
 # Tiago Telha - nº 60261
-# Descrição: Ponto de entrada do servidor. Gere o ciclo select() com múltiplos
-#            clientes simultâneos e ligações persistentes. Usa o Skeleton para
-#            comunicação e o Processador para lógica de dispatch.
+# Descrição: Ponto de entrada do servidor. 
+#           Regista o servidor no ZooKeeper, sincroniza o estado com o nó antecessor (se existir)        
+#           Gere o ciclo select() com múltiplos
+#           clientes simultâneos e ligações persistentes. 
+#           Usa o Skeleton para comunicação e o Processador para lógica de dispatch.
+#           Propaga operações de escrita ao sucessor de forma atómica.
 
 import sys
 import select as sel
 from servidor.processador import Processador
+from servidor.zookeeper_client import ZooKeeperServidor
 from shared.excepcoes_shared import ExcepcaoConfiguracaoInvalida, ExcecaoLigacaoInterrompida
 import shared.excepcoes_shared
 from shared.socket_utilities import PontoAcesso
@@ -15,22 +19,49 @@ from servidor.skeleton import Skeleton
 
 def main():
 
-    if len(sys.argv) != 2:
-        print("SERVIDOR> Uso: python -m servidor.main <porto>")
+    # Uso sem SSL: python -m servidor.main <porto> <ip_zk>:<porto_zk>
+    # Uso com SSL: python -m servidor.main <porto> <ip_zk>:<porto_zk> <cert_ficheiro> <key_ficheiro> <ca_ficheiro>
+
+    if len(sys.argv) not in (3, 6):
+        print("SERVIDOR> Uso: python -m servidor.main <porto> <ip_zk>:<porto_zk> "
+              "[serv_crt serv_key root_pem]")
         sys.exit(1)
 
-    try:
-        ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = sys.argv[1])  
-        processador = Processador(ponto_acesso)
-        sock_escuta = processador.obter_skeleton().obter_rede().socket_servidor
-        print("SERVIDOR> Configuracao do servidor válida. ")
+    porto_proprio = sys.argv[1]
+    endereco_zk = sys.argv[2]
 
+    # Certifcados SSL
+    cert_ficheiro = sys.argv[3] if len(sys.argv) == 6 else None
+    key_ficheiro = sys.argv[4] if len(sys.argv) == 6 else None
+    ca_ficheiro = sys.argv[5] if len(sys.argv) == 6 else None
+    
+    try:
+        ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = porto_proprio)  
+        processador = Processador(ponto_acesso, cert_ficheiro=cert_ficheiro, key_ficheiro=key_ficheiro, ca_ficheiro=ca_ficheiro)
+        skeleton = processador.obter_skeleton()
+        rede = skeleton.obter_rede()
+        sock_escuta = rede.socket_servidor
+        print("SERVIDOR> Configuracao do servidor válida. ")
     except ExcepcaoConfiguracaoInvalida as e:
         print("SERVIDOR>", e)
         sys.exit(1)
 
-    lista_sockets = [sock_escuta, sys.stdin]
+    zk_servidor = ZooKeeperServidor(endereco_zk, ip_proprio='localhost', porto_proprio=porto_proprio)
 
+    try:
+        zk_servidor.ligar(rede)
+        zk_servidor.registar()
+        antecessor_endereco, sucessor_endereco = zk_servidor.descobrir_vizinhos()
+    except Exception as e:
+        print(f"SERVIDOR> Erro ao inicializar ZooKeeper: {e}")
+        sys.exit(1)
+
+    processador.definir_zk_servidor(zk_servidor)
+
+    if antecessor_endereco is not None:
+        skeleton.pedir_estado(antecessor_endereco)
+    
+    lista_sockets = [sock_escuta, sys.stdin]
     print("SERVIDOR> À espera de ligações. Escreva 'exit' ou 'quit' para terminar.")
 
     running = True
@@ -71,6 +102,16 @@ def main():
                     continue
                 except shared.excepcoes_shared.ExcecaoDesserializacaoInvalida:
                     processador.envia(sckt, [shared.excepcoes_shared.OpCodes.DESSERIALIZACAO_INVALIDA, []])
+                    continue
+                
+                # Pedido de sincronização de estado
+                if isinstance(pedido, dict) and pedido.get("tipo") == "OBTER_ESTADO":
+                    try:
+                        skeleton.receber_estado(sckt)
+                    except Exception as e:
+                        print(f"SERVIDOR> Erro ao exportar estado: {e}")
+                    sckt.close()
+                    lista_sockets.remove(sckt)
                     continue
 
                 try:
