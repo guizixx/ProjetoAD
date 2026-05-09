@@ -13,8 +13,8 @@ from servidor.loja import Loja
 
 class Skeleton:
 
-    def __init__(self, pontoAcesso):
-        self.rede = TCPSocketServidor(pontoAcesso)
+    def __init__(self, pontoAcesso, cert_ficheiro=None, key_ficheiro=None, ca_ficheiro=None):
+        self.rede = TCPSocketServidor(pontoAcesso, cert_ficheiro, key_ficheiro, ca_ficheiro)
         self.loja = Loja()
 
     def reset(self): 
@@ -55,6 +55,16 @@ class Skeleton:
         print(f"SERVIDOR> Comando recebido: {msg}")
         return msg
 
+    def close(self): 
+        self.obter_rede().close()
+
+    def closeall(self): 
+        self.obter_rede().closeall()
+
+    # ------------------------------------------------------------------
+    # Sincronização de estado servidor com servidor 
+    # ------------------------------------------------------------------
+
     def enviar_estado(self, sock, loja):
         """
         Serializa o estado completo da loja e envia-o para o socket indicado (servidor a seguir na cadeia)
@@ -68,15 +78,26 @@ class Skeleton:
             tamanho = struct.pack('!I', len(dados))
         except Exception:
             raise excepcoes_shared.ExcecaoSerializacaoInvalida()
-            print("SERVIDOR> Estado da loja enviado com sucesso.")
         try:
-            self.obter_rede.envia(sock, tamanho, bytes)
+            self.obter_rede().envia(sock, tamanho, dados)
+            print("SERVIDOR> Estado da loja enviado com sucesso.")
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
 
+    def receber_estado(self, sock):
+        """
+        Recebe o estado completo da Loja enviado pelo antecessor, desserializa com pickle e aplica-o à Loja local.
+        """
+        try:
+            msg_bytes = self.obter_rede().recebe(sock)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
+        try:
+            estado = pickle.loads(msg_bytes)
+        except Exception:
+            raise excepcoes_shared.ExcecaoDesserializacaoInvalida()
+ 
+        self.obter_loja().importar_estado(estado)
+        print("SERVIDOR> Estado da loja recebido e atualizado com sucesso.")
 
-    def close(self): 
-        self.obter_rede().close()
 
-    def closeall(self): 
-        self.obter_rede().closeall()
