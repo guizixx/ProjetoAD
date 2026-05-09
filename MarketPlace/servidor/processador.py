@@ -17,6 +17,17 @@ import shlex
 from servidor.loja import Loja
 from shared.utilities import normalizar_nome
 
+OPCODES_ESCRITA = {
+    OpCodes.CRIA_CATEGORIA,
+    OpCodes.REMOVE_CATEGORIA,
+    OpCodes.CRIA_PRODUTO,
+    OpCodes.AUMENTA_STOCK,
+    OpCodes.ATUALIZA_PRECO,
+    OpCodes.CRIA_CLIENTE,
+    OpCodes.ADICIONA_PRODUTO_CARRINHO,
+    OpCodes.REMOVE_PRODUTO_CARRINHO,
+    OpCodes.CHECKOUT_CARRINHO,
+}
 
 class Processador:
 
@@ -26,12 +37,16 @@ class Processador:
     - valida estrutura, permissões e número de argumentos
     - faz dispatch para o handler correcto
     - acede à Loja via Skeleton para executar a lógica de negócio
+    - propaga escritas ao sucessor através do ZooKeeperServidor
     - devolve uma lista de resposta ao main.py
     """
 
-    def __init__(self, pontoAcesso):
-        self.skeleton = Skeleton(pontoAcesso)
+    def __init__(self, pontoAcesso, cert_ficheiro=None, key_ficheiro=None, ca_ficheiro=None):
+        self.skeleton = Skeleton(pontoAcesso, cert_ficheiro, key_ficheiro, ca_ficheiro)
                         # opcode:  [ handler, permissão mínima para poder executar a operação, numero_args a serem passados ]
+
+        self.zk_servidor = None # será injetado pelo main após a inicialização do ZooKeeper
+
         self.HANDLERS = {
             OpCodes.CRIA_CATEGORIA: [self._cmd_cria_categoria, 3, 1],
             OpCodes.LISTA_CATEGORIAS: [self._cmd_lista_categorias, 0, 0],
@@ -51,6 +66,9 @@ class Processador:
 
     def obter_skeleton(self):
         return self.skeleton
+    
+    def definir_zk_servidor(self, zk_servidor):
+        self.zk_servidor = zk_servidor
  
     def recebe(self, conn_sock):
         return self.obter_skeleton().recebe(conn_sock)
@@ -108,6 +126,25 @@ class Processador:
             raise shared.excepcoes_shared.ErroInterno()
         return comando
     
+    def propagar_escrita(self, comando):
+        """
+        Envia o comando da escrita ao sucessor e aguarda resposta.
+        Devolve a resposta do sucessor, ou None se a propagação falhar.
+        """
+        sock_sucessor = self.zk_servidor.obter_sock_sucessor()
+        if sock_sucessor is None:
+            return None
+        
+        lock = self.zk_servidor.obter_lock_escrita()
+        with lock:
+            try:
+                self.obter_skeleton().envia(sock_sucessor, comando)
+                resposta = self.obter_skeleton().recebe(sock_sucessor)
+                return resposta
+            except Exception as e:
+                print(f"SERVIDOR> Falha ao propagar escrita ao sucessor: {e}")
+                return None
+    
     def processar_comando(self, sckt, comando):
         try:            
             opcode, args, perfil, utilizador = self._dividir_comando(comando)
@@ -135,6 +172,11 @@ class Processador:
             #print(f"SERVIDOR> Resultado do comando: {resultado}")
         except (ExcepcaoSupermercado, ExcepcaoComandoInvalido) as e:
             raise e
+        
+        if opcode in OPCODES_ESCRITA and self.zk_servidor is not None:
+            resposta_sucessor = self.propagar_escrita(comando)
+            if resposta_sucessor is not None:
+                return resposta_sucessor
        
         return resultado
             
