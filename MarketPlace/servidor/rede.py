@@ -13,7 +13,7 @@ import struct
 
 class TCPSocketServidor:
 
-    def __init__(self, ponto_acesso, ca_ficheiro, cert_ficheiro, key_ficheiro):
+    def __init__(self, ponto_acesso, cert_ficheiro=None, key_ficheiro=None, ca_ficheiro=None):
         """
         ca_ficheiro: caminho para o certificado CA
         cert_ficheiro: caminho para o certificado SSL
@@ -31,14 +31,13 @@ class TCPSocketServidor:
         
         if self.cert_ficheiro is not None and self.key_ficheiro is not None:
             contexto = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            contexto.verify_mode = ssl.CERT_REQUIRED
-            contexto.load_verify_locations(cafile=self.ca_ficheiro)
+            contexto.verify_mode = ssl.CERT_NONE
             contexto.load_cert_chain(certfile=self.cert_ficheiro, keyfile=self.key_ficheiro)
             self.socket_servidor = contexto.wrap_socket(sock_antes_ssl, server_side=True)
-            print(f"SERVIDOR> A escutar com SSL em \n {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
+            print(f"SERVIDOR> A escutar com SSL em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
         else:
             self.socket_servidor = sock_antes_ssl
-            print(f"SERVIDOR> A escutar em \n {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
+            print(f"SERVIDOR> A escutar em {self.ponto_acesso.endereco_ip}:{self.ponto_acesso.porto}")
 
     def receive_all(self, conn_sock, length):
         dados = b""
@@ -80,7 +79,7 @@ class TCPSocketServidor:
         return conn_sock, addr
 
     
-    def ligar_a_servidor(self, endereco, ca_ficheiro=None):
+    def ligar_a_servidor(self, endereco):
         """
         Ligação TCP com SSL opcional a outro servidor da cadeia.
 
@@ -91,7 +90,7 @@ class TCPSocketServidor:
             ip, porto = endereco.split(":")
             sock_saida = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            if ca_ficheiro is not None:
+            if self.cert_ficheiro is not None and self.key_ficheiro is not None and self.ca_ficheiro is not None:
                 contexto = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
                 contexto.verify_mode = ssl.CERT_REQUIRED
                 contexto.check_hostname = True
