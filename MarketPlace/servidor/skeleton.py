@@ -100,4 +100,24 @@ class Skeleton:
         self.obter_loja().importar_estado(estado)
         print("SERVIDOR> Estado da loja recebido e atualizado com sucesso.")
 
-
+    def pedir_estado(self, antecessor_endereco):
+        """
+        Liga-se ao antecessor, envia o pedido OBTER_ESTADO e chama receber_estado() para aplicar
+        o estado localmente.
+        """
+        sock = self.obter_rede().ligar_a_servidor(antecessor_endereco)
+        if sock is None:
+            print(f"SERVIDOR> Não foi possível ligar ao antecessor para sincronizar.")
+            return
+        try:
+            pedido = pickle.dumps({"tipo": "OBTER_ESTADO"}, protocol=pickle.HIGHEST_PROTOCOL)
+            tamanho = struct.pack('!I', len(pedido))
+            self.obter_rede().envia(sock, tamanho, pedido)
+            print(f"SERVIDOR> Estado sincronizado com sucesso.")
+        except Exception as e:
+            print(f"SERVIDOR> Erro ao sincronizar estado com antecessor: {e}")
+        finally:
+            try:
+                sock.close()
+            except Exception:
+                pass
