@@ -148,7 +148,7 @@ class ZooKeeperServidor:
     def _obter_filhos_com_watch(self):
         """
         Obtém filhos de /chain e põe um watch.
-        O watch chamda _ao_mudar_cadeia quando os filhos mudam.
+        O watch chama _ao_mudar_cadeia quando os filhos mudam.
         Devolve a lista de nomes dos filhos.
         """
 
