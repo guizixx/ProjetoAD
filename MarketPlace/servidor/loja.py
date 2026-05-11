@@ -268,7 +268,7 @@ class Loja:
             "categorias": dict(self._categorias),
             "produtos": dict(self._produtos),
             "clientes": dict(self._clientes),
-            "encomendas": dict(self._encomendas)
+            "encomendas": dict(self._encomendas),
             "contador_categoria": Categoria._contador_global,
             "contador_produto": Produto._contador_global,
             "contador_encomenda": Encomenda._contador_global,
