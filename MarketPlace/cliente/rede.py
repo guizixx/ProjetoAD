@@ -12,7 +12,7 @@ import ssl
 
 class TCPSocketCliente:
 
-    def __init__(self, ponto_acesso, ca_ficheiro):
+    def __init__(self, ponto_acesso, ca_ficheiro=None):
         """
         cert_ficheiro: caminho para o certificado SSL
         key_ficheiro: caminho para a chave privada SSL
@@ -27,8 +27,7 @@ class TCPSocketCliente:
             context.verify_mode = ssl.CERT_REQUIRED
             context.check_hostname = True
             context.load_verify_locations(cafile= ca_ficheiro)
-            HOST = 'localhost'
-            self.socket_cliente = context.wrap_socket(sock_pre_ssl, server_hostname=HOST)
+            self.socket_cliente = context.wrap_socket(sock_pre_ssl, server_hostname= self.ponto_acesso.endereco_ip)
         else:
             self.socket_cliente = sock_pre_ssl
 
