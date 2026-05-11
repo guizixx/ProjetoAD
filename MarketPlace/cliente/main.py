@@ -18,15 +18,15 @@ from cliente.clienteZookeeper import ZooKeeperCliente
 # o ip:port passado pelo user passa a ser o ip:port do zookeeper
 
 def main():
-    if len(sys.argv) != 4:
-        # ver enunciado para alterar
-        # em principio só se passa a localizaçao do zookeeper
-        print("CLIENTE> Uso: python -m cliente.main <porto> <id_perfil> <id_utilizador>")
+    if len(sys.argv) not in (4, 5):
+        print("CLIENTE> Uso: python -m cliente.main <ip_zk>:<porto_zk> <id_perfil> <id_utilizador> <ca_ficheiro>")
         sys.exit(1)
 
     try:
+        ip_port_zk = sys.argv[1]
         perfil = int(sys.argv[2])
         id_utilizador = int(sys.argv[3])
+        ca_ficheiro = sys.argv[4] if len(sys.argv) == 5 else None
     except ValueError:
         print(f"CLIENTE> id_perfil e id_utilizador devem ser inteiros.")
         sys.exit(1)
@@ -40,7 +40,7 @@ def main():
         sys.exit(1)
 
     # alterar para o argumento passado em caso de nao ser o sys.argv[1]
-    cliente_zk = ZooKeeperCliente(sys.argv[1])
+    cliente_zk = ZooKeeperCliente(ip_port_zk)
 
     cliente_zk.ligar()
     cliente_zk.obter_head_e_tail()
@@ -70,8 +70,6 @@ def main():
     except ExcepcaoConfiguracaoInvalida  as e: 
         print("CLIENTE>", e)
         sys.exit(1) 
-
-    ca_ficheiro = 'root.pem'
 
     stub = Stub(ponto_acesso_w, ponto_acesso_r, ca_ficheiro)
     try:
