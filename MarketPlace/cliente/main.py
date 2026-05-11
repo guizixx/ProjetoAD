@@ -12,7 +12,8 @@ import shared.excepcoes_shared
 from cliente.stub import Stub
 from cliente.processador import Processador
 import shlex
-from clienteZookeeper import ZookeeperCliente
+from cliente.clienteZookeeper import ZooKeeperCliente
+
 
 # o ip:port passado pelo user passa a ser o ip:port do zookeeper
 
@@ -39,22 +40,28 @@ def main():
         sys.exit(1)
 
     # alterar para o argumento passado em caso de nao ser o sys.argv[1]
-    cliente_zk = ZookeeperCliente(sys.argv[1])
+    cliente_zk = ZooKeeperCliente(sys.argv[1])
 
     cliente_zk.ligar()
     cliente_zk.obter_head_e_tail()
 
     # obter localizaçao head
     endereco_head = cliente_zk.obter_head()
+    if endereco_head is None:
+        print("CLIENTE> Nenhum servidor head disponível.")
+        sys.exit(1)
     head_sep_ix = endereco_head.index(":")
     head_ip = endereco_head[:head_sep_ix]
-    head_port = endereco_head[head_sep_ix:]
+    head_port = endereco_head[head_sep_ix + 1:]
 
     # obter localizaçao tail
-    endereco_tail = cliente_zk.obter_head()
+    endereco_tail = cliente_zk.obter_tail()
+    if endereco_tail is None:
+        print("CLIENTE> Nenhum servidor tail disponível.")
+        sys.exit(1)
     tail_sep_ix = endereco_tail.index(":")
     tail_ip = endereco_tail[:tail_sep_ix]
-    tail_port = endereco_tail[tail_sep_ix:]
+    tail_port = endereco_tail[tail_sep_ix + 1:]
     
     try: 
         # valida endereco_ip e porto (se erro ExcepcaoIPInvalido ou ExcepcaoPortoInvalido)

@@ -11,7 +11,7 @@ import threading
 
 CHAIN_PATH = "/chain"
 
-class ZookeeperCliente:
+class ZooKeeperCliente:
 
     def __init__(self, endereco_zk):
 
@@ -73,10 +73,14 @@ class ZookeeperCliente:
         
         filhos_ord = sorted(filhos)
 
+        if not filhos_ord:
+            print("CLIENTE-ZK> Nenhum servidor na cadeia.")
+            return
+
         head = filhos_ord[0]
         self.znode_head = head
         try:
-            data_h, _ = self.zk.get(f"/servers/{head}")
+            data_h, _ = self.zk.get(f"/chain/{head}")
         except Exception as e:
             print(f"CLIENTE-ZK> Erro ao obter servidor {head}: {e}")
             return
@@ -85,7 +89,7 @@ class ZookeeperCliente:
         tail = filhos_ord[-1]
         self.znode_tail = tail
         try:
-            data_t, _ = self.zk.get(f"/servers/{tail}")
+            data_t, _ = self.zk.get(f"/chain/{tail}")
         except Exception as e:
             print(f"CLIENTE-ZK> Erro ao obter servidor {tail}: {e}")
             return
@@ -106,6 +110,9 @@ class ZookeeperCliente:
             return
 
         filhos_ord = sorted(filhos)
+        if not filhos_ord:
+            print("CLIENTE-ZK> Cadeia vazia após mudança.")
+            return
         head = filhos_ord[0]
         tail = filhos_ord[-1]
         
@@ -113,7 +120,7 @@ class ZookeeperCliente:
         if head != self.znode_head:
             self.znode_head = head
             try:
-                data_h, _ = self.zk.get(f"/servers/{head}")
+                data_h, _ = self.zk.get(f"/chain/{head}")
             except Exception as e:
                 print(f"CLIENTE-ZK> Erro ao obter servidor {head}: {e}")
                 return
@@ -123,7 +130,7 @@ class ZookeeperCliente:
         if tail != self.znode_tail:
             self.znode_tail = tail
             try:
-                data_t, _ = self.zk.get(f"/servers/{tail}")
+                data_t, _ = self.zk.get(f"/chain/{tail}")
             except Exception as e:
                 print(f"CLIENTE-ZK> Erro ao obter servidor {tail}: {e}")
                 return
