@@ -80,7 +80,9 @@ class Processador:
 
     def processar_pedido(self, pedido):
         self.stub.envia(pedido)
+        print(f"CLIENTE> Pedido enviado ao servidor: {pedido}")
         resposta = self.stub.recebe()
+        print(f"CLIENTE> Resposta recebida do servidor: {resposta}")
         return self.formatar_resposta(resposta)
 
     def formatar_resposta(self, resposta):

@@ -39,6 +39,7 @@ class TCPSocketCliente:
         dados = b""
         while len(dados) < length:
             parte = self.socket_cliente.recv(length - len(dados))
+            print(f"CLIENTE> Recebido {len(parte)} bytes, total recebido: {len(dados) + len(parte)}/{length} bytes")
             if not parte:
                 raise excepcoes_shared.ExcecaoLigacaoInterrompida()
             dados += parte
@@ -55,8 +56,10 @@ class TCPSocketCliente:
     def recebe(self):
         try:
             tamanho_bytes = self.receive_all(4)
+            print(f"CLIENTE> Tamanho dos bytes a receber: {struct.unpack('!I', tamanho_bytes)[0]} bytes")
             tamanho = struct.unpack('!I', tamanho_bytes)[0]
             dados = self.receive_all(tamanho)
+            print(f"CLIENTE> Dados recebidos: {dados}")
             return dados
         except excepcoes_shared.ExcecaoLigacaoInterrompida:
             raise

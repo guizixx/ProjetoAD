@@ -42,10 +42,12 @@ class Stub:
     def recebe(self): 
         try:
             bytes = self.obter_rede_r().recebe()
+            print(f"CLIENTE> Tamanho dos bytes recebidos: {len(bytes)}")
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
         try:
             resposta = pickle.loads(bytes)
+            print(f"CLIENTE> Resposta dentro do recebe do stub: {resposta}")
         except Exception:
             raise excepcoes_shared.ExcecaoDesserializacaoInvalida("Erro ao desserializar resposta.")
         return resposta
