@@ -161,9 +161,11 @@ class Processador:
                            OpCodes.CHECKOUT_CARRINHO, 
                            OpCodes.LISTA_CARRINHO,
                            OpCodes.CRIA_CLIENTE}:
+                args = list(args)
                 args.append(utilizador)
                 args.append(perfil)
             elif opcode in {OpCodes.LISTA_ENCOMENDAS}:
+                args = list(args)
                 args.append(utilizador)
         
             self._validar_n_args(args, self.HANDLERS.get(opcode)[2], opcode)
