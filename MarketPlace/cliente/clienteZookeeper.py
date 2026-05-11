@@ -73,7 +73,7 @@ class ZookeeperCliente:
         
         filhos_ord = sorted(filhos)
 
-        head = filhos_ord[-1]
+        head = filhos_ord[0]
         self.znode_head = head
         try:
             data_h, _ = self.zk.get(f"/servers/{head}")
@@ -82,7 +82,7 @@ class ZookeeperCliente:
             return
         self.endereco_head = data_h.decode("utf-8")
 
-        tail = filhos_ord[0]
+        tail = filhos_ord[-1]
         self.znode_tail = tail
         try:
             data_t, _ = self.zk.get(f"/servers/{tail}")
@@ -106,8 +106,8 @@ class ZookeeperCliente:
             return
 
         filhos_ord = sorted(filhos)
-        head = filhos_ord[-1]
-        tail = filhos_ord[0]
+        head = filhos_ord[0]
+        tail = filhos_ord[-1]
         
         # Verificar alteração na head
         if head != self.znode_head:
