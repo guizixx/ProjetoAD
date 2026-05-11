@@ -18,6 +18,7 @@ from cliente.clienteZookeeper import ZooKeeperCliente
 # o ip:port passado pelo user passa a ser o ip:port do zookeeper
 
 def main():
+    global stub, processador
     if len(sys.argv) not in (4, 5):
         print("CLIENTE> Uso: python -m cliente.main <ip_zk>:<porto_zk> <id_perfil> <id_utilizador> <ca_ficheiro>")
         sys.exit(1)
@@ -74,11 +75,42 @@ def main():
     stub = Stub(ponto_acesso_w, ponto_acesso_r, ca_ficheiro)
     try:
         stub.ligar()
+        print(f"CLIENTE> Ligado ao servidor em {head_ip}:{head_port}")
+        print(f"CLIENTE> Ligado ao servidor em {tail_ip}:{tail_port}")
     except OSError as e:
         print(f"CLIENTE> Erro ao ligar ao servidor: {e}")
         sys.exit(1)
 
     processador = Processador(stub)
+
+    def reconnect():
+        global stub, processador
+        try:
+            stub.desligar()
+        except:
+            pass
+        endereco_head = cliente_zk.obter_head()
+        endereco_tail = cliente_zk.obter_tail()
+        if endereco_head and endereco_tail:
+            head_sep_ix = endereco_head.index(":")
+            head_ip = endereco_head[:head_sep_ix]
+            head_port = endereco_head[head_sep_ix + 1:]
+            tail_sep_ix = endereco_tail.index(":")
+            tail_ip = endereco_tail[:tail_sep_ix]
+            tail_port = endereco_tail[tail_sep_ix + 1:]
+            try:
+                ponto_acesso_w = PontoAcesso(endereco_ip=head_ip, porto=head_port)
+                ponto_acesso_r = PontoAcesso(endereco_ip=tail_ip, porto=tail_port)
+                stub = Stub(ponto_acesso_w, ponto_acesso_r, ca_ficheiro)
+                stub.ligar()
+                processador.stub = stub
+                print(f"CLIENTE> Reconectado ao head {head_ip}:{head_port} e tail {tail_ip}:{tail_port}")
+            except Exception as e:
+                print(f"CLIENTE> Erro ao reconectar: {e}")
+        else:
+            print("CLIENTE> Não há servidores disponíveis para reconectar.")
+
+    cliente_zk.set_callback(reconnect)
 
     try:
         while True:
