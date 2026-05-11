@@ -95,7 +95,7 @@ class ZooKeeperCliente:
             return
         self.endereco_tail = data_t.decode("utf-8")
 
-    def handler_alteracao_cadeia(self):
+    def handler_alteracao_cadeia(self, evento):
         """
         Callback do ZooKeeper: chamado quando os filhos de /chain mudam.
         Avalia se os servidores definidos como head e tail precisam de ser

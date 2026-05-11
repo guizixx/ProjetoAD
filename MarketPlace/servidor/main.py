@@ -70,23 +70,41 @@ def main():
 
         for sckt in R:
             if sckt == sock_escuta: # Se for a socket de escuta...
-                conn_sock, addr = sock_escuta.accept()
-                addr, port = conn_sock.getpeername()
-                print('SERVIDOR> Novo cliente ligado desde %s:%d' % (addr, port))
-                lista_sockets.append(conn_sock) # Adiciona ligação à lista
+                try:
+                    conn_sock, addr = sock_escuta.accept()
+                    try:
+                        addr, port = conn_sock.getpeername()
+                        print('SERVIDOR> Novo cliente ligado desde %s:%d' % (addr, port))
+                        lista_sockets.append(conn_sock) # Adiciona ligação à lista
+                    except OSError as e:
+                        print(f"SERVIDOR> Erro ao obter peer name: {e}. Socket fechado.")
+                        try:
+                            conn_sock.close()
+                        except:
+                            pass
+                        continue
+                except Exception as e:
+                    print(f"SERVIDOR> Erro ao aceitar conexão: {e}")
+                    continue
             
             elif sckt == sys.stdin: # Se for a entrada do stdin ...
                 command = sys.stdin.readline().strip()
                 if command.upper() in ("EXIT","QUIT"):
                     print("SERVIDOR> A encerrar...")
-                    for sckt in lista_sockets:
-                        if sckt != sys.stdin:
-                            try:
-                                processador.envia(sckt, "SERVIDOR_ENCERROU")
-                                sckt.close()
-                                lista_sockets.remove(sckt)
-                            except Exception:
-                                pass
+                    sockets_to_close = [s for s in lista_sockets if s != sys.stdin]
+                    for sckt in sockets_to_close:
+                        try:
+                            processador.envia(sckt, "SERVIDOR_ENCERROU")
+                        except Exception:
+                            pass
+                        try:
+                            sckt.close()
+                        except Exception:
+                            pass
+                        try:
+                            lista_sockets.remove(sckt)
+                        except Exception:
+                            pass
                     print("SERVIDOR> Servidor encerrado.")
                     running = False
                     break
@@ -97,11 +115,17 @@ def main():
                     print(f"SERVIDOR> Pedido recebido do cliente: {pedido}")
                 except ExcecaoLigacaoInterrompida:
                     print(f"SERVIDOR> Cliente {sckt.fileno()} fechou a ligação.")
-                    sckt.close()
-                    lista_sockets.remove(sckt)
+                    try:
+                        sckt.close()
+                        lista_sockets.remove(sckt)
+                    except Exception:
+                        pass
                     continue
                 except shared.excepcoes_shared.ExcecaoDesserializacaoInvalida:
-                    processador.envia(sckt, [shared.excepcoes_shared.OpCodes.DESSERIALIZACAO_INVALIDA, []])
+                    try:
+                        processador.envia(sckt, [shared.excepcoes_shared.OpCodes.DESSERIALIZACAO_INVALIDA, []])
+                    except Exception:
+                        pass
                     continue
                 
                 # Pedido de sincronização de estado
@@ -110,8 +134,11 @@ def main():
                         skeleton.receber_estado(sckt)
                     except Exception as e:
                         print(f"SERVIDOR> Erro ao exportar estado: {e}")
-                    sckt.close()
-                    lista_sockets.remove(sckt)
+                    try:
+                        sckt.close()
+                        lista_sockets.remove(sckt)
+                    except Exception:
+                        pass
                     continue
 
                 try:
@@ -139,8 +166,18 @@ def main():
                     processador.envia(sckt, resposta)
                 except ExcecaoLigacaoInterrompida:
                     print(f"SERVIDOR> Cliente {sckt.fileno()} fechou a ligação ao enviar resposta.")
-                    sckt.close()
-                    lista_sockets.remove(sckt)
+                    try:
+                        sckt.close()
+                        lista_sockets.remove(sckt)
+                    except Exception:
+                        pass
+                except Exception as e:
+                    print(f"SERVIDOR> Erro ao enviar resposta: {e}")
+                    try:
+                        sckt.close()
+                        lista_sockets.remove(sckt)
+                    except Exception:
+                        pass
                 
 if __name__ == "__main__":
     main()
