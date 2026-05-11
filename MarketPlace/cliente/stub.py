@@ -9,6 +9,7 @@ from cliente.rede import TCPSocketCliente
 from shared import excepcoes_shared
 import pickle, struct
 
+
 class Stub:
 
     def __init__(self, ponto_acesso_W, ponto_acesso_R, ca_ficheiro=None):
@@ -29,7 +30,17 @@ class Stub:
         self.obter_rede_w().desligar()
         self.obter_rede_r().desligar()
         
-    def envia(self, pedido): 
+    def envia_leitura(self, pedido): 
+        try:
+            bytes = pickle.dumps(pedido, protocol=pickle.HIGHEST_PROTOCOL)
+        except Exception:
+            raise excepcoes_shared.ExcecaoSerializacaoInvalida("Erro ao serializar pedido.")
+        try:
+            self.obter_rede_r().envia(bytes)
+        except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
+            raise e
+        
+    def envia_escrita(self, pedido): 
         try:
             bytes = pickle.dumps(pedido, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception:
@@ -38,6 +49,7 @@ class Stub:
             self.obter_rede_w().envia(bytes)
         except excepcoes_shared.ExcecaoLigacaoInterrompida as e:
             raise e
+
 
     def recebe(self): 
         try:

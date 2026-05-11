@@ -27,6 +27,19 @@ COMANDOS_VALIDOS = {
     "LISTA_ENCOMENDAS": [OpCodes.LISTA_ENCOMENDAS, 1],
 }
 
+OPCODES_ESCRITA = {
+    OpCodes.CRIA_CATEGORIA,
+    OpCodes.REMOVE_CATEGORIA,
+    OpCodes.CRIA_PRODUTO,
+    OpCodes.AUMENTA_STOCK,
+    OpCodes.ATUALIZA_PRECO,
+    OpCodes.CRIA_CLIENTE,
+    OpCodes.ADICIONA_PRODUTO_CARRINHO,
+    OpCodes.REMOVE_PRODUTO_CARRINHO,
+    OpCodes.CHECKOUT_CARRINHO,
+}
+
+
 class Processador:
 
     def __init__(self, stub):
@@ -79,7 +92,10 @@ class Processador:
         return args
 
     def processar_pedido(self, pedido):
-        self.stub.envia(pedido)
+        if pedido[0] in OPCODES_ESCRITA:
+            self.stub.envia_escrita(pedido)
+        else:
+            self.stub.envia_leitura(pedido)
         resposta = self.stub.recebe()
         return self.formatar_resposta(resposta)
 
