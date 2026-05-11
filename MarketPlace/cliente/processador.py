@@ -94,9 +94,11 @@ class Processador:
     def processar_pedido(self, pedido):
         if pedido[0] in OPCODES_ESCRITA:
             self.stub.envia_escrita(pedido)
+            resposta = self.stub.recebe_escrita()
         else:
             self.stub.envia_leitura(pedido)
-        resposta = self.stub.recebe()
+            resposta = self.stub.recebe_leitura()
+
         print(f"CLIENTE> Resposta recebida do servidor: {resposta}")
         return self.formatar_resposta(resposta)
 
