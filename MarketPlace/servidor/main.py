@@ -132,7 +132,7 @@ def main():
                 # Pedido de sincronização de estado
                 if isinstance(pedido, dict) and pedido.get("tipo") == "OBTER_ESTADO":
                     try:
-                        skeleton.receber_estado(sckt)
+                        skeleton.enviar_estado(sckt, skeleton.obter_loja())
                     except Exception as e:
                         print(f"SERVIDOR> Erro ao exportar estado: {e}")
                     try:
