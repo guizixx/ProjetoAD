@@ -154,6 +154,8 @@ def main():
                 
                 if "Cliente criado com sucesso com identificador único" in resultado:
                     perfil = 1 # atualizar perfil para cliente após criação bem-sucedida
+                    id_utilizador = int(resultado[-2])
+                    print(f"CLIENTE> Novo perfil de cliente criado com ID {id_utilizador}. Perfil atualizado para cliente.")
 
 
                 print(resultado)
