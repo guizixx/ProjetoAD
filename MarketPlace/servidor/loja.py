@@ -224,7 +224,9 @@ class Loja:
         for k in carrinho_encomenda.keys():
             carrinho_encomenda[k] = [carrinho_encomenda.get(k), self._produtos.get(k).obter_preco()]
 
-        encomenda = Encomenda(datetime.now().replace(microsecond=0), carrinho_encomenda, id_cliente, total)
+        cliente = self._clientes.get(id_cliente)
+        encomenda = Encomenda(datetime.now().replace(microsecond=0), carrinho_encomenda, id_cliente, total, 
+                             cliente.obter_nome(), cliente.obter_email())
         self._encomendas[encomenda.obter_id()] = encomenda
         self._clientes.get(id_cliente).obter_carrinho_compras().clear()
         return encomenda
@@ -247,7 +249,11 @@ class Loja:
                 produtos_encomenda = []
 
                 for k in carrinho_encomenda.keys():
-                    produtos_encomenda.append(self._produtos.get(k))
+                    prod = self._produtos.get(k)
+                    prod1 = copy(prod)
+                    # carrinho_encomenda[k] é [quantidade_encomendada, preço]
+                    prod1.alterar_quantidade(carrinho_encomenda[k][0])
+                    produtos_encomenda.append(prod1)
                 produtos_por_encomenda.append(produtos_encomenda)
 
         return encomendas_cliente, produtos_por_encomenda

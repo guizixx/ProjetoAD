@@ -245,8 +245,11 @@ class Processador:
                     f"{prod.obter_id()} - {prod.obter_nome()} "
                     f"({prod.obter_categoria()}, {prod.obter_preco():.2f} euros, {prod.obter_quantidade()} unidades);"
                 )
+            cliente_str = ""
+            if enc.obter_cliente_nome() and enc.obter_cliente_email():
+                cliente_str = f"Cliente: {enc.obter_cliente_nome()} {enc.obter_cliente_email()}"
             linhas_encomendas += [
-                f"\nID Encomenda: {enc.obter_id()}",
+                f"ID Encomenda: {enc.obter_id()}",
                 f"Data Encomenda: {enc.obter_data()}",
                 f"Total Produtos: {len(itens)}",
                 f"Total Quantidade: {total_qtd_enc}",
@@ -260,13 +263,14 @@ class Processador:
             if len(cats_ord) > 1:
                 top.append(cats_ord[1][0])
         if len(top) > 1:
-            cat_top_str = "Categorias Top: " + ", ".join(top)
+            cat_top_str = "Categorias Top: " + ", ".join(top) + "\n"
         elif top:
-            cat_top_str = "Categoria Top: " + top[0]
+            cat_top_str = "Categoria Top: " + top[0] + "\n"
         else:
             cat_top_str = ""
  
         linhas = [
+            f"{cliente_str}",
             f"Total Encomendas: {len(encomendas)}",
             f"Total Produtos: {len(ids_produtos_vistos)}",
             f"Total Preço: {total_preco_geral} euros",
