@@ -159,8 +159,7 @@ class Processador:
             if opcode in  {OpCodes.ADICIONA_PRODUTO_CARRINHO, 
                            OpCodes.REMOVE_PRODUTO_CARRINHO, 
                            OpCodes.CHECKOUT_CARRINHO, 
-                           OpCodes.LISTA_CARRINHO,
-                           OpCodes.CRIA_CLIENTE}:
+                           OpCodes.LISTA_CARRINHO}:
                 args = list(args)
                 args.append(utilizador)
                 args.append(perfil)
@@ -168,7 +167,13 @@ class Processador:
                 args = list(args)
                 if len(args) == 0:
                     args.append(utilizador)
-        
+            elif opcode in {OpCodes.CRIA_CLIENTE}:
+                if perfil == 1:
+                    utilizador += 1
+                args = list(args)
+                args.append(utilizador)
+                args.append(perfil)
+                    
             self._validar_n_args(args, self.HANDLERS.get(opcode)[2], opcode)
 
             resultado = handler(args)
@@ -255,9 +260,6 @@ class Processador:
         pw = args[2]
         id_cliente = args[3]
         permissao = args[4]
-
-        if permissao != 0:
-            raise shared.excepcoes_shared.OperacaoNaoAutorizada()
         
         if '@' not in email:
             raise shared.excepcoes_shared.EmailInvalido()
