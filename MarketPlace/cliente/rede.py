@@ -25,7 +25,7 @@ class TCPSocketCliente:
         if ca_ficheiro is not None:
             context = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
             context.verify_mode = ssl.CERT_REQUIRED
-            context.check_hostname = True
+            context.check_hostname = False
             context.load_verify_locations(cafile= ca_ficheiro)
             self.socket_cliente = context.wrap_socket(sock_pre_ssl, server_hostname= self.ponto_acesso.endereco_ip)
         else:

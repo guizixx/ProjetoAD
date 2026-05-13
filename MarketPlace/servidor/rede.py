@@ -93,7 +93,7 @@ class TCPSocketServidor:
             if self.cert_ficheiro is not None and self.key_ficheiro is not None and self.ca_ficheiro is not None:
                 contexto = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
                 contexto.verify_mode = ssl.CERT_REQUIRED
-                contexto.check_hostname = True
+                contexto.check_hostname = False
                 contexto.load_verify_locations(cafile=self.ca_ficheiro)
                 contexto.load_cert_chain(certfile=self.cert_ficheiro, keyfile=self.key_ficheiro)
                 sock = contexto.wrap_socket(sock_saida, server_hostname=ip)

@@ -22,21 +22,22 @@ def main():
     # Uso sem SSL: python -m servidor.main <porto> <ip_zk>:<porto_zk>
     # Uso com SSL: python -m servidor.main <porto> <ip_zk>:<porto_zk> <cert_ficheiro> <key_ficheiro> <ca_ficheiro>
 
-    if len(sys.argv) not in (3, 6):
-        print("SERVIDOR> Uso: python -m servidor.main <porto> <ip_zk>:<porto_zk> "
+    if len(sys.argv) not in (4, 7):
+        print("SERVIDOR> Uso: python -m servidor.main <ip> <porto> <ip_zk>:<porto_zk> "
               "[serv_crt serv_key root_pem]")
         sys.exit(1)
 
-    porto_proprio = sys.argv[1]
-    endereco_zk = sys.argv[2]
+    ip_proprio = sys.argv[1]
+    porto_proprio = sys.argv[2]
+    endereco_zk = sys.argv[3]
 
     # Certifcados SSL
-    cert_ficheiro = sys.argv[3] if len(sys.argv) == 6 else None
-    key_ficheiro = sys.argv[4] if len(sys.argv) == 6 else None
-    ca_ficheiro = sys.argv[5] if len(sys.argv) == 6 else None
-    
+    cert_ficheiro = sys.argv[4] if len(sys.argv) == 7 else None
+    key_ficheiro = sys.argv[5] if len(sys.argv) == 7 else None
+    ca_ficheiro = sys.argv[6] if len(sys.argv) == 7 else None
+
     try:
-        ponto_acesso = PontoAcesso(endereco_ip='localhost', porto = porto_proprio)  
+        ponto_acesso = PontoAcesso(endereco_ip=ip_proprio, porto=porto_proprio)
         processador = Processador(ponto_acesso, cert_ficheiro=cert_ficheiro, key_ficheiro=key_ficheiro, ca_ficheiro=ca_ficheiro)
         skeleton = processador.obter_skeleton()
         rede = skeleton.obter_rede()
@@ -46,7 +47,7 @@ def main():
         print("SERVIDOR>", e)
         sys.exit(1)
 
-    zk_servidor = ZooKeeperServidor(endereco_zk, ip_proprio='localhost', porto_proprio=porto_proprio)
+    zk_servidor = ZooKeeperServidor(endereco_zk, ip_proprio=ip_proprio, porto_proprio=porto_proprio)
 
     try:
         zk_servidor.ligar(rede)
