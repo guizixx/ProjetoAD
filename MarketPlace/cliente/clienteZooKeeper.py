@@ -22,6 +22,7 @@ class ZooKeeperCliente:
         self.endereco_tail = None
         self.znode_head = None
         self.znode_tail = None
+        self.callback = None
         
 
     def obter_head(self):
@@ -35,6 +36,9 @@ class ZooKeeperCliente:
 
     def alterar_tail(self, tail):
         self.tail = tail
+
+    def set_callback(self, callback):
+        self.callback = callback
 
 
     def ligar(self):
@@ -95,7 +99,7 @@ class ZooKeeperCliente:
             return
         self.endereco_tail = data_t.decode("utf-8")
 
-    def handler_alteracao_cadeia(self):
+    def handler_alteracao_cadeia(self, evento):
         """
         Callback do ZooKeeper: chamado quando os filhos de /chain mudam.
         Avalia se os servidores definidos como head e tail precisam de ser
@@ -135,6 +139,9 @@ class ZooKeeperCliente:
                 print(f"CLIENTE-ZK> Erro ao obter servidor {tail}: {e}")
                 return
             self.endereco_tail = data_t.decode("utf-8")
+
+        if self.callback:
+            self.callback()
 
 
 
