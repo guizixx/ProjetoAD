@@ -88,7 +88,7 @@ class Loja:
     def criar_produto(self, nome_produto, nome_categoria, preco, quantidade):
         for p in self._produtos.values():
             if nome_produto == p.obter_nome():
-                raise excepcoes_shared.ProdutoJaExiste()
+                raise excepcoes_shared.ProdutoJaExiste(p.obter_nome())
         if self.obter_id_categoria(nome_categoria) is None:
             raise excepcoes_shared.CategoriaNaoExiste(nome_categoria)
         if preco <= 0:
@@ -116,7 +116,7 @@ class Loja:
     def aumentar_stock_produto(self, nome, quantidade):
         id_prod = self.obter_id_produto(nome)
         if id_prod is None:
-            raise excepcoes_shared.ProdutoNaoExiste()
+            raise excepcoes_shared.ProdutoNaoExiste(nome)
         if int(quantidade) < 0:
             raise excepcoes_shared.QuantidadeInvalida()
         self._produtos.get(id_prod).adicionar_quantidade(quantidade)
@@ -125,7 +125,7 @@ class Loja:
     def atualizar_preco_produto(self, nome, novo_preco):
         id_prod = self.obter_id_produto(nome)
         if id_prod is None:
-            raise excepcoes_shared.ProdutoNaoExiste()
+            raise excepcoes_shared.ProdutoNaoExiste(nome)
         if novo_preco < 0:
             raise excepcoes_shared.PrecoInvalido()
         
@@ -159,7 +159,7 @@ class Loja:
     def adiciona_produto_carrinho(self, id_cliente, nome_produto, quantidade):
         self.validar_id(id_cliente)
         if self.obter_id_produto(nome_produto) is None:
-            raise excepcoes_shared.ProdutoNaoExiste()
+            raise excepcoes_shared.ProdutoNaoExiste(nome_produto)
         if quantidade <= 0:
             raise excepcoes_shared.QuantidadeInvalida()
         if self._produtos.get(self.obter_id_produto(nome_produto)).obter_quantidade() < quantidade:
@@ -176,7 +176,7 @@ class Loja:
     def remover_produto_carrinho(self, id_cliente, nome_produto):
         self.validar_id(id_cliente)
         if self.obter_id_produto(nome_produto) is None:
-            raise excepcoes_shared.ProdutoNaoExiste()
+            raise excepcoes_shared.ProdutoNaoExiste(nome_produto)
 
         id_produto = self.obter_id_produto(nome_produto)
         carrinho = self._clientes.get(id_cliente).obter_carrinho_compras()
